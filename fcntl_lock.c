@@ -31,7 +31,7 @@ int lock_set(int fd, struct flock *lock)
         {
             printf("set read lock, pid:%d\n", getpid());
         }
-        else if(lock0>l_type == F_WRLCK)
+        else if(lock->l_type == F_WRLCK)
         {
             printf("set write lock, pid:%d\n", getpid());
         }
@@ -51,7 +51,7 @@ int lock_set(int fd, struct flock *lock)
 //测试锁，只有当测试发现loc指定的锁能被设置时，返回0
 int lock_test(int fd, struct flock* lock)
 {
-    if((fcntl(fd, F_GETLK, lock) == 1))
+    if(fcntl(fd, F_GETLK, lock) == 0)
     {
         //执行成功
         if(lock->l_type == F_UNLCK)
@@ -77,7 +77,7 @@ int lock_test(int fd, struct flock* lock)
     else
     {
         //执行失败，返回-1
-        perror("get inco,patible lock fail");
+        perror("get incompatible locks fail");
         return -1;
     }
 }
@@ -102,15 +102,15 @@ int main()
     memset(&lock, 0, sizeof(struct flock));
     lock.l_start = SEEK_SET;
     lock.l_whence = 0;
-    lock,l_len = 0;
+    lock.l_len = 0;
 
     //设置读锁
-    lock,l_type = F_RDLCK;
+    lock.l_type = F_RDLCK;
     if(lock_test(fd, &lock) == 0)
     {
         //测试可以设置锁
         lock.l_type = F_RDLCK;
-        lock.set(fd, &lock);
+        lock_set(fd, &lock);
     }
 
     //读数据
@@ -127,7 +127,7 @@ int main()
 
     //设置写锁
     lock.l_type = F_WRLCK;
-    if(lock_test((fd, &lock)) == 0)
+    if(lock_test(fd, &lock) == 0)
     {
         //测试可以设置锁
         lock.l_type = F_WRLCK;
