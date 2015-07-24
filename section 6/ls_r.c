@@ -22,10 +22,7 @@
 #define PARAM_NONE 0    //无参数
 #define PARAM_A 1   //-a :显示所有文件
 #define PARAM_L 2 //-l ：一行显示一个文件的详细信息
-<<<<<<< HEAD
 #define PARAM_r 4 //-r : 逆序排列输出
-=======
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
 #define MAXROWLEN 80 //一行最多显示的字符数
 void ls_R(int, char **);
 int recursion(int, char *);
@@ -219,11 +216,8 @@ void display(int flag, char *pathname)
     //用lstat而不是stat以方便解析链接文件
     if(lstat(pathname, &buf) == -1)
     {
-<<<<<<< HEAD
         printf("权限不足！！\n");
         return ; ////////////////////////////////////////
-=======
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
         my_err("stat", __LINE__);
     }
 
@@ -236,7 +230,6 @@ void display(int flag, char *pathname)
         }
         break;
        
-<<<<<<< HEAD
         case PARAM_r:    //-r
         if(name[0] != '.')
         {
@@ -244,8 +237,6 @@ void display(int flag, char *pathname)
         }
         break;
 
-=======
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
         case PARAM_A:   //-a:显示包括隐藏文件在内的所有文件
         display_single(name);
         break;
@@ -263,7 +254,6 @@ void display(int flag, char *pathname)
         printf(" %-s\n", name);
         break;
 
-<<<<<<< HEAD
         case PARAM_r + PARAM_A:    //-ar
         display_single(name);
         break;
@@ -276,8 +266,6 @@ void display(int flag, char *pathname)
         }
         break;
 
-=======
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
         defualt:
         break;
     }
@@ -288,11 +276,7 @@ void display_dir(int flag_param, char *path)
     DIR *dir;
     struct dirent *ptr;
     int count = 0;
-<<<<<<< HEAD
     char filename[600][PATH_MAX+1],temp[PATH_MAX + 1];
-=======
-    char filename[256][PATH_MAX+1],temp[PATH_MAX + 1];
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
 
     //获取该目录下文件总数和最长文件名
     dir = opendir(path);
@@ -310,14 +294,9 @@ void display_dir(int flag_param, char *path)
     }
     closedir(dir);
 
-<<<<<<< HEAD
     if(count > 600)
     {
         //printf("%d", count);
-=======
-    if(count > 256)
-    {
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
         my_err("too many file under this dir", __LINE__);
     }
 
@@ -335,7 +314,6 @@ void display_dir(int flag_param, char *path)
         strcat(filename[i], ptr->d_name);
         filename[i][len + strlen(ptr->d_name)] = '\0';
     }
-<<<<<<< HEAD
     closedir(dir);
 
     //使用冒泡法对文件名进行排序，排序后文件名按字母顺序存储与filename
@@ -372,22 +350,6 @@ void display_dir(int flag_param, char *path)
                     strcpy(filename[j], temp);
                     filename[j][strlen(temp)] = '\0';
                 }
-=======
-
-    //使用冒泡法对文件名进行排序，排序后文件名按字母顺序存储与filename
-    for(i = 0; i < count - 1; i++)
-    {
-        for(j = 0; j < count - 1 - i; j++)
-        {
-            if(strcmp(filename[j], filename[j+1]) > 0)
-            {
-                strcpy(temp, filename[j + 1]);
-                temp[strlen(filename[j+1])] = '\0';
-                strcpy(filename[j+1], filename[j]);
-                filename[j+1][strlen(filename[j])] = '\0';
-                strcpy(filename[j], temp);
-                filename[j][strlen(temp)] = '\0';
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
             }
         }
     }
@@ -397,14 +359,8 @@ void display_dir(int flag_param, char *path)
         display(flag_param, filename[i]);
     }
 
-<<<<<<< HEAD
 
     //如果命令行没有-l选项，打印一个换行符          
-=======
-    closedir(dir);
-
-    //如果命令行没有-l选项，打印一个换行符          ？？？？
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
     if((flag_param & PARAM_L) == 0)
     {
         printf("\n");
@@ -419,11 +375,7 @@ int main(int argc, char **argv)
     int flag_param = PARAM_NONE;    //参数种类，即是否有-l和-a选项
     struct stat buf;
 
-<<<<<<< HEAD
     char *path = (char*)malloc(PATH_MAX+1);
-=======
-    char *path = (char*)malloc(PARAM_NONE+1);
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
     //命令行参数的解析，分析-l,-a,-al,-la选项
     j = 0;
     num = 0;
@@ -439,11 +391,7 @@ int main(int argc, char **argv)
         }
     }
 
-<<<<<<< HEAD
     //只支持a和l和r，如果含有其它选项就报错
-=======
-    //只支持a和l，如果含有其它选项就报错
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
     for(i = 0; i < j; i++)
     {
         if(param[i] == 'a')
@@ -456,7 +404,6 @@ int main(int argc, char **argv)
             flag_param |= PARAM_L;
             continue;
         }
-<<<<<<< HEAD
         else if(param[i] == 'r')
         {
             flag_param |= PARAM_r;
@@ -465,10 +412,6 @@ int main(int argc, char **argv)
         else if(param[i] == 'R')
         {
             free(path);
-=======
-        else if(param[i] == 'R')
-        {
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
             ls_R(argc, argv);
         }
         else
@@ -538,11 +481,7 @@ void ls_R(int argc, char **argv)
     int flag_param = 0;
     struct stat buf;
     int i;
-<<<<<<< HEAD
     char path[500];
-=======
-    char path[PATH_MAX + 1];
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
     for(i = 1; i < argc; i++)
     {
         if(argv[i][0] != '-') 
@@ -559,21 +498,12 @@ int recursion(int flag, char *path)
 {
     DIR *dir;
     struct dirent *ptr;     
-<<<<<<< HEAD
     char pathname[10000];     //带有文件名称的路径
     int flag_param = 0;
     struct stat buf;
     int len, i;
     display_dir(flag_param, path);
     //pathname = (char *)malloc(PATH_MAX);
-=======
-    char *pathname;     //带有文件名称的路径
-    int flag_param = 1;
-    struct stat buf;
-    int len, i;
-    display_dir(flag_param, path);
-    pathname = (char *)malloc(PATH_MAX);
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
     strcpy(pathname, path);
     dir = opendir(path);
     while(1)
@@ -581,10 +511,7 @@ int recursion(int flag, char *path)
         ptr = readdir(dir);
         if(ptr == NULL)
         {
-<<<<<<< HEAD
             closedir(dir);
-=======
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
             return 1;
         }
         if(!(strcmp(ptr->d_name,".") && (strcmp(ptr->d_name, "..") && ptr->d_name[0] != '.')))
@@ -592,21 +519,14 @@ int recursion(int flag, char *path)
             continue;
         }
         strcat(pathname, ptr->d_name);
-<<<<<<< HEAD
         lstat(pathname, &buf);
-=======
-        stat(pathname, &buf);
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
         if(S_ISDIR(buf.st_mode))
         {
             len = strlen(pathname);
             pathname[len] = '/';
             pathname[len + 1] = '\0';
             printf("\n%s:\n", pathname);
-<<<<<<< HEAD
             g_maxlen = 0;
-=======
->>>>>>> f58f00fb6ba8ce510b79fc04022258d120f20e4d
             g_leave_len = MAXROWLEN;
             recursion(flag, pathname);
         }
