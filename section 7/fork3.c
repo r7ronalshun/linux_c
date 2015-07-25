@@ -22,7 +22,7 @@ int main(void)
             while(1)
             {
                 printf("child process is run, pid is %d, parent id is %d.\n", getpid(), getppid());
-                sleep(2);
+                sleep(3);
             }
             break;
         }
