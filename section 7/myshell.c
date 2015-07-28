@@ -22,8 +22,8 @@
 
 void print_prompt();    //打印提示符
 void get_input(char *);     //得到输入的命令
-void explain_input(char *, int *, char **a);  //对输入的命令进行解析
-void do_cmd(int, char **a);   //执行命令
+void explain_input(char *, int *, char (*)[256]);  //对输入的命令进行解析
+void do_cmd(int, char (*)[256]);   //执行命令
 int find_command(char *);   //查找命令中的可执行程序
 
 int main(int argc, char **argv)
@@ -55,8 +55,8 @@ int main(int argc, char **argv)
             arglist[i][0] = '\0';
         }
         argcount = 0;
-        explain_input(buf, &argcount, (char **)arglist);
-        do_cmd(argcount, (char **)arglist);
+        explain_input(buf, &argcount, arglist);
+        do_cmd(argcount, arglist);
     }
 
     if(buf != NULL)
@@ -96,7 +96,7 @@ void get_input(char *buf)
 }
 
 //解析buf中的命令，将结果存入arglist中，命令以回车符号\n结束
-void explain_input(char *buf, int *argcount, char **arglist)
+void explain_input(char *buf, int *argcount, char (*arglist)[256])
 {
     char *p = buf;
     char *q = buf;
@@ -131,7 +131,7 @@ void explain_input(char *buf, int *argcount, char **arglist)
 }
 
 
-void do_cmd(int argcount, char **arglist)
+void do_cmd(int argcount, char (*arglist)[256])
 {
     int flag = 0;
     int how = 0;    //用于只是命令中是否含有> 、 < 、 |
