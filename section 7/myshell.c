@@ -25,6 +25,8 @@ void get_input(char *);     //得到输入的命令
 void explain_input(char *, int *, char (*)[256]);  //对输入的命令进行解析
 void do_cmd(int, char (*)[256]);   //执行命令
 int find_command(char *);   //查找命令中的可执行程序
+char *msg;  //用于myshell提示信息的输出
+
 
 int main(int argc, char **argv)
 {
@@ -69,7 +71,10 @@ int main(int argc, char **argv)
 
 void print_prompt()
 {
-    printf("myshell$$ ");
+    msg = (char *)malloc(100);
+    getcwd(msg, 100);
+    printf("myshell@zxq:%s$ ", msg);
+    free(msg);
 }
 
 //获取用户输入
@@ -240,6 +245,23 @@ void do_cmd(int argcount, char (*arglist)[256])
                 break;
             }
         }
+    }
+
+    if((arg[0] != NULL) && (strcmp(arg[0], "cd") == 0))
+    {
+        if(arg[1] == NULL)
+        {
+            return ;
+        }
+        if(strcmp(arg[1], "~") == 0)
+        {
+            strcpy(arg[1], "/home/zhuxinquan/");
+        }
+        if(chdir(arg[1]) ==  -1)
+        {
+            perror("cd:");
+        }
+        return ;
     }
 
     if((pid = fork()) < 0)
