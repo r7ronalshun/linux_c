@@ -106,7 +106,7 @@ void explain_input(char *buf, int *argcount, char (*arglist)[256])
     char *p = buf;
     char *q = buf;
     int number = 0;
-
+    int i;
     while(1)
     {
         if(p[0] == '\n')
@@ -124,6 +124,15 @@ void explain_input(char *buf, int *argcount, char (*arglist)[256])
             number = 0;
             while((q[0] != ' ') && (q[0] != '\n'))
             {
+                if(q[0] == 92)
+                {
+                    q[0] = ' ';
+                    q[1] = q[2];
+                    for(i = 2; ( q[i+1] != ' ') && (q[i+1] != '\n'); i++)
+                    {
+                        q[i] = q[i+1];
+                    }
+                }
                 number++;
                 q++;
             }
@@ -259,7 +268,7 @@ void do_cmd(int argcount, char (*arglist)[256])
         }
         if(chdir(arg[1]) ==  -1)
         {
-            perror("cd:");
+            perror("cd");
         }
         return ;
     }
