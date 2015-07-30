@@ -30,6 +30,7 @@ int main(int argc, char **argv)
     getcwd(buf, 512);
     printf("%s\n", buf);
     getchar();
+    puts(argv[1]);
     if(chdir(argv[1]) < 0)
     {
         my_err("getcwd", __LINE__);
