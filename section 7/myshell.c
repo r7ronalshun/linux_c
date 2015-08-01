@@ -229,10 +229,23 @@ void do_cmd(int argcount, char (*arglist)[256])
         //命令只含有一个输出重定向符号
         for(i = 0; arg[i] != NULL; i++)
         {
-            if(strcmp(arg[i], "<") == 0)
+            if(strcmp(arg[i], ">") == 0)
             {
                 file = arg[i+1];
                 arg[i] = NULL;
+            }
+        }
+    }
+
+    if(how == in_readdirect)
+    {
+        //命令只含有一个输入重定向
+        for(i = 0; arg[i] != NULL; i++)
+        {
+            if(strcmp(arg[i], "<") == 0)
+            {
+                file = arg[i + 1];
+                arg[i] == NULL;
             }
         }
     }
