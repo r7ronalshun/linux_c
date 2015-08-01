@@ -128,9 +128,11 @@ void explain_input(char *buf, int *argcount, char (*arglist)[256])
                 {
                     q[0] = ' ';
                     q[1] = q[2];
-                    for(i = 2; ( q[i+1] != ' ') && (q[i+1] != '\n'); i++)
+                    for(i = 2; ; i++)
                     {
                         q[i] = q[i+1];
+                        if((q[i] == ' ') || (q[i] == '\n'))
+                        break;
                     }
                 }
                 number++;
