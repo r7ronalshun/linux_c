@@ -18,7 +18,7 @@ void * thr_fn1(void *arg)
 {
     printf("thread 1 start\n");
     pthread_cleanup_push(cleanup, "thread 1 first handler");
-    pthread_cleanup_push(cleanup, "thread 1 first handler");
+    pthread_cleanup_push(cleanup, "thread 1 scecond handler");
     printf("thread 1 push complete\n");
     if(arg)
     {
@@ -33,7 +33,7 @@ void *thr_fn2(void *arg)
 {
     printf("thread 2 start\n");
     pthread_cleanup_push(cleanup, "thread 2 first handler");
-    pthread_cleanup_push(cleanup, "thread 2 first handler");
+    pthread_cleanup_push(cleanup, "thread 2 second handler");
     printf("thread 2 push complete\n");
     if(arg)
     {
