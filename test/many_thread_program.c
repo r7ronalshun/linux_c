@@ -65,6 +65,7 @@ int main(void)
         perror("join");
     }
 
+    printf("result a :%d\n", a);
     exit(0);
 }
 
