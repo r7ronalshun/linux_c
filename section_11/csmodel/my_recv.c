@@ -13,6 +13,8 @@
 #include<string.h>
 #include<errno.h>
 #include "my_recv.h"
+#include<stdlib.h>
+
 
 void my_err(const char * err_string, int line)
 {
@@ -42,5 +44,18 @@ int my_recv(int conn_fd, char *data_buf, int len)
         pread = recv_buf;                               //重新初始化pread指针
     }
 
-    
+    for(i = 0; *pread != '\n'; i++)                     //从自定义缓冲区读取一次数据
+    {
+        if(i > len)                                     //防止指针越界
+        {
+            return -1;
+        }
+        data_buf[i] = *pread++;
+        len_remain--;
+    }
+
+    len_remain--;                                       //去除结束标志
+    pread++;
+
+    return i;
 }
