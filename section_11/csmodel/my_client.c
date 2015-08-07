@@ -134,7 +134,7 @@ int main(int argc, char ** argv)
         my_err("socket", __LINE__);
     }
 
-    if(connet(conn_fd, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr)) < 0){    //向服务器端发送连接请求
+    if(connect(conn_fd, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr)) < 0){    //向服务器端发送连接请求
         my_err("connect", __LINE__);
     }
     
