@@ -10,10 +10,11 @@
 #include<sys/socket.h>
 #include<unistd.h>
 #include<string.h>
-#include<netinet.h>
+#include<netinet/in.h>
 #include<arpa/inet.h>
 #include<errno.h>
 #include "my_recv.h"
+#include<stdlib.h>
 
 #define SERV_PORT       4507        //服务器的端口
 #define LISTENQ         12          //连接请求队列的最大长度
@@ -27,7 +28,7 @@
 struct userinfo                     //保存用户名和密码的结构体
 {
     char username[32];
-    cahr password[32];
+    char password[32];
 };
 
 struct userinfo users[] = 
@@ -50,7 +51,7 @@ int find_name(const char * name)
     }
     for(i = 0; users[i].username[0] != ' '; i++)
     {
-        if(strcmp(user[i].username, name) == 0)
+        if(strcmp(users[i].username, name) == 0)
         {
             return i;
         }
@@ -60,7 +61,7 @@ int find_name(const char * name)
 
 void send_data(int conn_fd, const char *string)
 {
-    if(send(cond_fd, string, strlen(string), 0) < 0)
+    if(send(conn_fd, string, strlen(string), 0) < 0)
     {
         my_err("send", __LINE__);   //my_err函数在my_recv.h中声明            
     }
@@ -74,7 +75,7 @@ int main()
     int                  ret;
     int                  name_num;
     pid_t                pid;
-    socketlen_t          cli_len;
+    socklen_t            cli_len;
     struct sockaddr_in   cli_addr, serv_addr;
     char                 recv_buf[128];
 
@@ -90,7 +91,7 @@ int main()
         my_err("setsocketopt", __LINE__);
     }
 
-    memset(&serv_addr, 0 sizeof(struct sockaddr_in));   //初始化服务器端地址结构
+    memset(&serv_addr, 0, sizeof(struct sockaddr_in));   //初始化服务器端地址结构
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(SERV_PORT);
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -114,7 +115,7 @@ int main()
             my_err("accept", __LINE__);
         }
 
-        printf("accept a new client, ip: %S\n", inet_ntoa(cli_addr.sin_addr));
+        printf("accept a new client, ip: %s\n", inet_ntoa(cli_addr.sin_addr));
         if((pid = fork()) == 0)                         //创建子进程处理刚刚接收的连接请求
         {
             while(1)                                    //子进程
@@ -138,7 +139,7 @@ int main()
                             exit(1);
                             break;
                         default:
-                            send_data(cond_fd, "y\n");
+                            send_data(conn_fd, "y\n");
                             flag_recv = PASSWORD;
                             break;
                     }
