@@ -73,6 +73,8 @@ void * client (void *);                             //单独的处理客户端�
 void save();                                        //用户数据保存
 struct users * readuser();                          //用户数据读取
 struct users * apply(struct log, int);              //申请账号
+struct users * login(struct log, int);              //用户登陆
+
 
 pthread_mutex_t         mutex;                      //锁
 struct users * head = NULL;                         //用户数据链表的头指针
@@ -300,6 +302,75 @@ void my_err(const char * err_string, int line)      //自定义出错处理函�
 struct users * apply(struct log log, int i)
 {
     char            enroll_buf[1024];
-    struct log      log;
-    struct users
+    struct log      log1;
+    struct users    *p = head, *p1;
+    int             ret;
+
+        log1 = log;
+    while(p->next != NULL)
+    {
+        if(strcmp((p->next->user).username, log1.name)  == 0)
+        {
+            ret = send(conn[i].fd, "n", 1024, 0);
+            if(ret != 1024)
+            {
+                printf("发送失败！\n");
+                pthread_exit((void *)1);
+                
+            }
+            return NULL;
+        }
+        p = p->next;
+    }
+
+    p1 = (struct users*)malloc(sizeof(struct user*));
+    strcpy((p1->user).username, log1.name);
+    strcpy(p1->password, log1.pwd);
+    p->next = p1;                                           //只将单独的信息追加到链表头指针,然后将这一单独的信息保存进文件
+    p1->next = NULL;
+    save();
+    memset(enroll_buf, 0, sizeof(enroll_buf));
+    memcpy(enroll_buf, &(p1->user), sizeof(p1->user));
+    ret = send(conn[i].fd, enroll_buf, 1024, 0);
+    if(ret != 1024)
+    {
+        printf("发送失败！\n");
+        pthread_exit((void *)1);
+    }
+}
+
+struct users * login(struct log log, int i)
+{
+    char            login_buf[1024];
+    struct users    *p = head->next;
+    struct users    user_temp;
+    int             ret;
+    while(p != NULL)
+    {
+        if(strcmp((p->user).username, log.name) == 0)
+        {
+            if(strcmp(p->password, log.pwd) == 0)
+            {
+                user_temp.user = p->user;
+                memset(login_buf, 0, sizeof(login_buf));
+                memcpy(login_buf, &user_temp.user, sizeof(user_temp.user));
+                ret = send(conn[i].fd, login_buf, 1024, 0);
+                if(ret != 1024)
+                {
+                    printf("发送失败！\n");
+                    pthread_exit((void *)1);
+                }
+                strcpy(conn[i].name, log.name);
+                return p;
+            }
+        }
+        p = p->next;
+    }
+    ret = send(conn[i].fd, "n", 1024, 0);
+    if(ret != 1024)
+    {
+        printf("发送失败！\n");
+        pthread_exit((void *)1);
+    }
+    return NULL;
 }
