@@ -145,15 +145,16 @@ int main(void)
         
         conn[i].fd = conn_fd;                                   //若该连接套接字可用，将其使用赋值给连接套接字队列中未被使用的一个
         printf("accrpt a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));      //新客户端连接，服务器显示客户端连接ip
-        
-        pthread_create(&thid, NULL, (void *)client, (void *)&i);                     //创建一个新的线程处理客户端请求
+        int g = i;
+        pthread_create(&thid, NULL, client, (void *)&g);                     //创建一个新的线程处理客户端请求
     }
     return 0;
 }
 
 void * client (void * arg)
 {
-    int             i = *(int *)arg;
+    int             f = *(int *)arg;
+    int             i = f;
     char            flag[1024] ;
     char            recv_buf[1024];
     struct users*   p_user;
@@ -163,7 +164,7 @@ void * client (void * arg)
     {
         struct log  log;
         memset(flag, 0, sizeof(flag));
-
+        
         if((ret = recv(conn[i].fd, flag, 1024, 0)) < 0)
         {
             my_err("apply", __LINE__);
@@ -174,7 +175,6 @@ void * client (void * arg)
         memcpy(&log, flag, 1024);
         
         head = readuser();
-
         if(log.flag == 'a')                 //注册请求
         {
             p_user = apply(log, i);
@@ -185,7 +185,7 @@ void * client (void * arg)
             }
         }
 
-        if(log.flag == 'b')                 //登陆请求
+        if(log.flag == 'l')                 //登陆请求
         {
             p_user = login(log, i);
             pthread_mutex_unlock(&mutex);
@@ -194,11 +194,19 @@ void * client (void * arg)
                 break;
             }
         }
-
+        
         if(log.flag == 'q')
         {
             pthread_mutex_unlock(&mutex);
-            ret = send(conn[i].fd, "y", 1024, 0);
+            memset(&log, 0, sizeof(struct log));
+            log.flag = 'y';
+            memcpy(flag, &log, sizeof(struct log));
+            ret = send(conn[i].fd, flag, 1024, 0);
+            if(ret < 0)
+            {
+                perror("send failed");
+                pthread_exit(0);
+            }
             close(conn[i].fd);
             conn[i].fd = -1;
             pthread_exit(0);
@@ -225,7 +233,7 @@ void quit(void *arg)                        //服务器退出函数
     int  i;                                 //关闭所有的连接套接字
     while(1)
     {
-        printf("输入exit退出！！\n");
+        printf("----------输入exit退出！！----------\n");
         scanf("%s", shutdown);
         if(strcmp(shutdown, "exit") == 0)
         {
@@ -306,15 +314,18 @@ struct users * apply(struct log log, int i)
     struct users    *p = head, *p1;
     int             ret;
 
-        log1 = log;
+    log1 = log;
     while(p->next != NULL)
     {
         if(strcmp((p->next->user).username, log1.name)  == 0)
         {
-            ret = send(conn[i].fd, "n", 1024, 0);
+            memset(&log1, 0, sizeof(struct log));
+            log1.flag = 'n';
+            memcpy(enroll_buf, &log1, sizeof(struct log));
+            ret = send(conn[i].fd, enroll_buf, 1024, 0);
             if(ret != 1024)
             {
-                printf("发送失败！\n");
+                printf("send error\n");
                 pthread_exit((void *)1);
                 
             }
@@ -355,6 +366,7 @@ struct users * login(struct log log, int i)
                 memset(login_buf, 0, sizeof(login_buf));
                 memcpy(login_buf, &user_temp.user, sizeof(user_temp.user));
                 ret = send(conn[i].fd, login_buf, 1024, 0);
+                printf("用户%s登陆成功！\n", log.name);
                 if(ret != 1024)
                 {
                     printf("发送失败！\n");
