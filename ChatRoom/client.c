@@ -32,8 +32,7 @@ void before_login_quit();               //登陆之后的退出函数
 void add_friend();                      //添加好友函数
 void show_all_friend();                 //查看所有好友函数
 void show_online_friend();              //查看在线好友
-void find_friend();                     //查找好友
-
+void sign_pthread();                    //处理消息线程函数
 
 struct info                             //个人信息
 {
@@ -103,7 +102,7 @@ int main(int argc, char ** argv)
     int                  ret;
     int                  serv_port;
     struct sockaddr_in   serv_addr;
-
+    pthread_t            thid;
     if(argc != 5)                                   //检查参数个数
     {
         printf("usage : [-p] [serv_port] [-a] [serv_address]\n");
@@ -155,12 +154,17 @@ int main(int argc, char ** argv)
     }
 
     print_menu();                                                           //打印主菜单
+    pthread_create(&thid, NULL, (void *)sign_pthread, NULL);              //创建线程用来接受并解析所有消息
     print_login_menu();
     printf("任意键退出！\n");
     getchar();
 
 }
 
+void sign_pthread()
+{
+    
+}
 
 void print_menu(void)
 {
@@ -377,31 +381,64 @@ void print_login_menu()
 void friend_management()
 {
     char            select;
-    printf("--------------%s-----------------\n", user.username);
-    printf("         1.添加好友\n");
-    printf("         2.查看所有好友\n");
-    printf("         3.查看在线好友\n");
-    printf("         4.查找好友\n");
-    printf("         0.返回上级菜单\n");
-    printf("---------------------------------\n");
-    printf("         请选择：");
-    setbuf(stdin, NULL);
-    scanf("%c", &select);
-    switch(select)
+    while(1)
     {
-        case '1':
-            add_friend();
-            break;
-        case '2':
-            show_all_friend();
-            break;
-        case '3':
-            show_online_friend();
-        case '4':
-            find_friend();
-        case '5':
-            return ;
+        system("clear");
+        printf("----------user: %s-----------------\n", user.username);
+        printf("         1.添加好友\n");
+        printf("         2.查看所有好友\n");
+        printf("         3.查看在线好友\n");
+        printf("         4.查找好友\n");
+        printf("         0.返回上级菜单\n");
+        printf("---------------------------------\n");
+        printf("         请选择：");
+        setbuf(stdin, NULL);
+        scanf("%c", &select);
+        switch(select)
+        {
+            case '0':
+                return ;
+            case '1':
+                add_friend();
+                break;
+            case '2':
+                show_all_friend();
+                break;
+            case '3':
+                show_online_friend();
+            case '4':
+                find_friend();
+            default :
+                break;
+        }
     }
+}
+
+void add_friend()
+{
+    struct chat chat;
+    char        add_buf[1024];
+    int         ret;
+
+    memset(&chat, 0, sizeof(struct chat));
+    chat.flag = 'a';
+    printf("请输入要添加的好友名：");
+    setbuf(stdin, NULL);
+    scanf("%s", chat.news);
+    memcpy(add_buf, &chat, sizeof(struct chat));
+    ret = send(conn_fd, add_buf, 1024, 0);
+    if(ret != 1024)
+    {
+        perror("send error");
+        exit(1);
+    }
+    printf("添加好友成功！\n");
+    return ;
+}
+
+void message_management()
+{
+    
 }
 
 void before_login_quit()
@@ -432,7 +469,18 @@ void before_login_quit()
     }
 }
 
-void message_management()
+
+void show_all_friend()
 {
-    
+
+}
+
+void show_online_friend()
+{
+
+}
+
+void find_friend() 
+{
+
 }

@@ -212,6 +212,38 @@ void * client (void * arg)
         memcpy(&chat, recv_buf, sizeof(recv_buf));
         switch(chat.mark)
         {
+            case 'a':
+                head = readuser();
+                struct users    *q;
+                q = head;
+                for( q = head->next; q != NULL; q = q->next )
+                {
+                    if(strcmp((q->user).username, chat.news) == 0)
+                    {
+                        break;
+                    }
+                }
+                if(q != NULL)
+                {
+                    for(q = head->next; q != NULL; q = q->next)
+                    {
+                        if(strcmp(conn[i].name, (q->user).username) == 0)
+                        {
+                            int i;
+                            for(i = 0; i < 10; i++)
+                            {
+                                if(strcmp((q->friend[i]).username, "") == 0)
+                                {
+                                    strcpy((q->friend[i]).username, chat.news);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    printf("%s好友添加完成%s\n", q->user.username, chat.news);
+                }
+                
             case 'q':
                 memset(&chat, 0, sizeof(struct chat));
                 chat.mark = 'y';
