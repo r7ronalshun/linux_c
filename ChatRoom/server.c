@@ -31,22 +31,13 @@ struct info                                         //个人信息结构体
     char username[10];                              //用户名
 };
 
-struct group                                        //群组结构体
-{
-    char        group_name[10];                     //群名称
-    char        admin_name[10];                     //群管理员
-    int         member_num;                         //群成员数量
-    struct info member[10];                         //群成员
-};
 
 struct users 
 {
     char        password[10];                       //用户密码
     int         friends_num;                        //好友数
-    int         group_num;                          //群组数
     struct info user;                               //用户个人信息
     struct info friend[10];                         //好友信息
-    struct group group[5];                          //群组
     struct users * next;
 };
 
@@ -55,7 +46,6 @@ struct chat
     int         mark;                               //消息标志
     char        from[10];                           //消息来自
     char        to[10];                             //消息发往
-    char        ask[10];
     char        time[30];                           //时间
     char        news[500];                          //聊天信息
 };
@@ -222,7 +212,15 @@ void * client (void * arg)
         memcpy(&chat, recv_buf, sizeof(recv_buf));
         switch(chat.mark)
         {
-            
+            case 'q':
+                memset(&chat, 0, sizeof(struct chat));
+                chat.mark = 'y';
+                memcpy(recv_buf, &chat, sizeof(struct chat));
+                send(conn[i].fd, recv_buf, 1024, 0);
+                conn[i].fd = -1;
+                printf("用户%s退出成功\n", (p_user->user).username);
+                pthread_exit(0);
+                break;
         }
     }
 }
@@ -348,6 +346,8 @@ struct users * apply(struct log log, int i)
         printf("发送失败！\n");
         pthread_exit((void *)1);
     }
+    printf("用户%s注册成功\n", (p1->user).username);
+    return p1;
 }
 
 struct users * login(struct log log, int i)

@@ -19,25 +19,27 @@
 
 #define BUFSIZE 1024 
 
-void cls(void);                         //清除输入缓存函数
 void my_err(const char *, int);         //错误处理函数
 void print_menu(void);                  //打印主界面菜单函数
 void quit(void);                        //退出函数
 int register_num();                     //注册函数
 int login();                            //登陆函数
 void print_login_menu();                //登陆后菜单
+void friend_management();               //好友管理菜单
+void message_management();              //消息管理
+void find_friend();                     //好友查找函数
+void before_login_quit();               //登陆之后的退出函数
+void add_friend();                      //添加好友函数
+void show_all_friend();                 //查看所有好友函数
+void show_online_friend();              //查看在线好友
+void find_friend();                     //查找好友
+
 
 struct info                             //个人信息
 {
     char    username[10];
 };
 
-struct group                            //群组信息
-{
-    char            group_name[20];
-    char            admin_name[10];
-    struct info     member[10];
-};
 
 struct log                              //用户登陆注册、退出时使用
 {
@@ -51,7 +53,6 @@ struct users                            //用户链表结构体
     char            password[10];
     struct info     user;
     struct info     friends[10];        //好友
-    struct group    group[5];
     struct users*   next;
 };
 
@@ -61,8 +62,6 @@ struct users                            //用户链表结构体
  */
 int                 conn_fd;
 int                 friend_num;
-int                 group_num;
-int                 member_num;
 char                password[10];
 struct info         user;
 struct info         friend[10];
@@ -75,7 +74,6 @@ struct chat                             //聊天消息结构体
     int     flag;
     char    from[10];
     char    to[10];
-    char    ask[10];
     char    time[30];
     char    news[500];
 };
@@ -167,7 +165,7 @@ int main(int argc, char ** argv)
 void print_menu(void)
 {
     int   ret;
-    int   c;                                         //接收选项
+    char  c;                                    //接收选项
     while(1)
     {
         //system("clear");
@@ -178,16 +176,17 @@ void print_menu(void)
         printf("\t\t            3.退出\n\n");
         printf("\t\t----------------------------\n\n");
         printf("\t\t         请选择<1 ~ 3>：");
-        scanf("%d", &c);
+        setbuf(stdin, NULL);
+        scanf("%c", &c);
         
-        if(c == 1)
+        if(c == '1')
         {
             if(register_num())                  //注册返回值1,注册成功
             {
                 break;
             }
         }
-        else if(c == 2)
+        else if(c == '2')
         {
             ret = login();//登陆函数
             if(ret == 1)
@@ -195,7 +194,7 @@ void print_menu(void)
                 break;  
             }
         }
-        else if(c == 3)
+        else if(c == '3')
         {
             quit();
         }
@@ -331,6 +330,7 @@ int login()
     }
     if(strcmp(login_buf, log.name) == 0)
     {
+        strcpy(user.username, log.name);
         printf("\n登陆成功！\n");
         return 1;
     }
@@ -354,10 +354,85 @@ void print_login_menu()
         printf("\n");
         printf("---------------------\n");
         printf("       1.好友管理\n");
-        printf("       2.查找好友\n");
-        printf("       3.消息管理\n");
+        printf("       2.消息管理\n");
         printf("       0.退出\n");
         printf("---------------------\n");
         printf("       请选择：");
+        setbuf(stdin, NULL);
+        scanf("%d", &select);
+        switch (select)
+        {
+            case 1:
+                friend_management();
+                break;
+            case 2:
+                message_management();
+                break;
+            case 0:
+                before_login_quit();
+        }
     }
+}
+
+void friend_management()
+{
+    char            select;
+    printf("--------------%s-----------------\n", user.username);
+    printf("         1.添加好友\n");
+    printf("         2.查看所有好友\n");
+    printf("         3.查看在线好友\n");
+    printf("         4.查找好友\n");
+    printf("         0.返回上级菜单\n");
+    printf("---------------------------------\n");
+    printf("         请选择：");
+    setbuf(stdin, NULL);
+    scanf("%c", &select);
+    switch(select)
+    {
+        case '1':
+            add_friend();
+            break;
+        case '2':
+            show_all_friend();
+            break;
+        case '3':
+            show_online_friend();
+        case '4':
+            find_friend();
+        case '5':
+            return ;
+    }
+}
+
+void before_login_quit()
+{
+    struct chat chat;
+    char        quit_buf[1024];
+    int         ret;
+
+    memset(quit_buf, 0, sizeof(quit_buf));
+    memset(&chat, 0, sizeof(struct chat));
+    chat.flag = 'q';
+    memcpy(quit_buf, &chat, sizeof(struct chat));
+    ret = send(conn_fd, quit_buf, 1024, 0);
+    if(ret != 1024)
+    {
+        printf("send error!\n");
+        exit(1);
+    }
+    ret = recv(conn_fd, quit_buf, 1024, 0);
+    if(ret != 1024)
+    {
+        perror("recv error");
+        exit(1);
+    }
+    if(strcmp(quit_buf, "y") == 0)
+    {
+        exit(0);
+    }
+}
+
+void message_management()
+{
+    
 }
