@@ -163,7 +163,40 @@ int main(int argc, char ** argv)
 
 void sign_pthread()
 {
-    
+    char        sign_buf[1024];
+    struct chat chat;
+    int         ret;
+
+    while(1)
+    {
+        memset(sign_buf, 0, 1024);
+        memset(&chat, 0, sizeof(struct chat));
+        ret = recv(conn_fd, sign_buf, 1024, 0);
+        if(ret != 1024)
+        {
+            perror("recv error");
+            exit(1);
+        }
+        memcpy(&chat, sign_buf, 1024);
+        switch(chat.flag)
+        {
+            case 'a':
+                printf("ok\n");
+                if(strcmp(chat.news, "n") == 0)
+                {
+                    printf("好友不存在！\n");
+                }
+                else{
+                    printf("好友添加成功\n");
+                }
+                break;
+            case 'l':
+                printf("%s\n", chat.news);
+                break;
+            
+        }
+        
+    }
 }
 
 void print_menu(void)
@@ -217,29 +250,8 @@ void quit()
     memset(&log, 0, sizeof(struct log));
     log.flag = 'q';
     memcpy(quitbuf, &log, sizeof(struct log));
-    ret = send(conn_fd, quitbuf, 1024, 0);
-    if(ret != 1024)
-    {
-        perror("send error");
-        exit(1);
-    }
-    ret = recv(conn_fd, quitbuf, 1024, 0);
-    if(ret < 0)
-    {
-        printf("recv failed\n");
-        exit(0);
-    }
-    memset(&log, 0, sizeof(struct log));
-    memcpy(&log, quitbuf, sizeof(struct log));
-    if( log.flag == 'y')
-    {
-        close(conn_fd);
-        system("clear");
-        exit(0);
-    }
-    else{
-        printf("quit error!\n");
-    }
+    send(conn_fd, quitbuf, 1024, 0);
+    exit(0);
 }
 
 int register_num()
@@ -348,6 +360,7 @@ int login()
 
 void print_login_menu()
 {
+    struct chat chat;
     while(1)
     {
         int             ret;
@@ -373,7 +386,11 @@ void print_login_menu()
                 message_management();
                 break;
             case 0:
-                before_login_quit();
+                memset(&chat, 0, sizeof(struct chat));
+                chat.flag = 'q';
+                memcpy(login_user_buf, &chat, sizeof(struct chat));
+                send(conn_fd, login_user_buf, 1024, 0);
+                exit(0);
         }
     }
 }
@@ -383,7 +400,7 @@ void friend_management()
     char            select;
     while(1)
     {
-        system("clear");
+        //system("clear");
         printf("----------user: %s-----------------\n", user.username);
         printf("         1.添加好友\n");
         printf("         2.查看所有好友\n");
@@ -422,6 +439,7 @@ void add_friend()
 
     memset(&chat, 0, sizeof(struct chat));
     chat.flag = 'a';
+    strcpy(chat.from, user.username);
     printf("请输入要添加的好友名：");
     setbuf(stdin, NULL);
     scanf("%s", chat.news);
@@ -432,7 +450,6 @@ void add_friend()
         perror("send error");
         exit(1);
     }
-    printf("添加好友成功！\n");
     return ;
 }
 
@@ -441,7 +458,7 @@ void message_management()
     
 }
 
-void before_login_quit()
+/*void before_login_quit()
 {
     struct chat chat;
     char        quit_buf[1024];
@@ -467,12 +484,18 @@ void before_login_quit()
     {
         exit(0);
     }
-}
+}*/
 
 
 void show_all_friend()
 {
-
+    char            buf[1024];
+    struct chat     chat;
+    memset(&chat, 0, sizeof(struct chat));
+    chat.flag = 'l';
+    strcmp(chat.from, user.username);
+    memcpy(buf, &chat, sizeof(struct chat));
+    send(conn_fd, buf, 1024, 0);
 }
 
 void show_online_friend()

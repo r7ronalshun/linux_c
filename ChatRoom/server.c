@@ -43,7 +43,7 @@ struct users
 
 struct chat
 {
-    int         mark;                               //消息标志
+    int         flag;                               //消息标志
     char        from[10];                           //消息来自
     char        to[10];                             //消息发往
     char        time[30];                           //时间
@@ -147,9 +147,9 @@ void * client (void * arg)
     int             i = f;
     char            flag[1024] ;
     char            recv_buf[1024];
-    struct users*   p_user;
+    struct users*   p_user, *p;
     int             ret;
-
+    
     while(1)
     {
         struct log  log;
@@ -168,6 +168,7 @@ void * client (void * arg)
         if(log.flag == 'a')                 //注册请求
         {
             p_user = apply(log, i);
+            strcpy(conn[i].name, p_user->user.username);
             pthread_mutex_unlock(&mutex);   //解锁
             if(p_user != NULL)
             {
@@ -210,48 +211,74 @@ void * client (void * arg)
         memset(recv_buf, 0, sizeof(recv_buf));
         ret = recv(conn[i].fd, recv_buf, 1024, 0);
         memcpy(&chat, recv_buf, sizeof(recv_buf));
-        switch(chat.mark)
+        switch(chat.flag)
         {
             case 'a':
+                pthread_mutex_lock(&mutex);
                 head = readuser();
-                struct users    *q;
-                q = head;
-                for( q = head->next; q != NULL; q = q->next )
+                pthread_mutex_unlock(&mutex);
+                for(p = head->next; p != NULL; p = p->next)
                 {
-                    if(strcmp((q->user).username, chat.news) == 0)
+                    if(strcmp(p->user.username, chat.news) == 0)
+                        break;
+                }
+                if(p == NULL)
+                {
+                    memset(&chat, 0, sizeof(struct chat));
+                    memset(recv_buf, 0, 1024);
+                    chat.flag = 'n';
+                    memcpy(recv_buf, &chat, sizeof(struct chat));
+                    send(conn[i].fd, recv_buf, 1024, 0);
+                    break;
+                }
+                for(p = head->next; p != NULL; p = p->next)
+                {
+                    if(strcmp(chat.from, p->user.username) == 0)
                     {
+                        strcpy((p->friend[p->friends_num]).username, chat.news);
                         break;
                     }
                 }
-                if(q != NULL)
-                {
-                    for(q = head->next; q != NULL; q = q->next)
-                    {
-                        if(strcmp(conn[i].name, (q->user).username) == 0)
-                        {
-                            int i;
-                            for(i = 0; i < 10; i++)
-                            {
-                                if(strcmp((q->friend[i]).username, "") == 0)
-                                {
-                                    strcpy((q->friend[i]).username, chat.news);
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    printf("%s好友添加完成%s\n", q->user.username, chat.news);
-                }
-                
+                memset(&chat, 0, 1024);
+                chat.flag = 'a';
+                strcpy(chat.news, "y");
+                memset(recv_buf, 0, 1024);
+                memcpy(recv_buf, &chat, sizeof(struct chat));
+                send(conn[i].fd, recv_buf, 1024, 0);
+                pthread_mutex_lock(&mutex);
+                save();
+                pthread_mutex_unlock(&mutex);
+                break;
             case 'q':
                 memset(&chat, 0, sizeof(struct chat));
-                chat.mark = 'y';
+                chat.flag = 't';
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 conn[i].fd = -1;
                 printf("用户%s退出成功\n", (p_user->user).username);
                 pthread_exit(0);
+                break;
+            case 'l':
+                head = readuser();
+                p = head->next;
+                memset(&chat, 0, sizeof(struct chat));
+                memset(recv_buf, 0, 1024);
+                for(p; p != NULL; p = p->next)
+                {
+                    if(strcmp(chat.from, (p->user).username) == 0);
+                    {
+                        int i;
+                        for(i = 0; i < p->friends_num; i++)
+                        {
+                            printf("%s\n", (p->friend[i]).username);
+                            strcat(chat.news, ",");
+                            strcat(chat.news, (p->friend[i].username));
+                        }
+                        break;
+                    }
+                }
+                memcpy(recv_buf, &chat, sizeof(struct chat));
+                send(conn[i].fd, recv_buf, 1024, 0);
                 break;
         }
     }
@@ -367,6 +394,7 @@ struct users * apply(struct log log, int i)
     p1 = (struct users*)malloc(sizeof(struct user*));
     strcpy((p1->user).username, log1.name);
     strcpy(p1->password, log1.pwd);
+    p1->friends_num = 0;
     p->next = p1;                                           //只将单独的信息追加到链表头指针,然后将这一单独的信息保存进文件
     p1->next = NULL;
     save();
