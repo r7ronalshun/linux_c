@@ -27,7 +27,7 @@ int login();                            //登陆函数
 void print_login_menu();                //登陆后菜单
 void friend_management();               //好友管理菜单
 void message_management();              //消息管理
-void find_friend();                     //好友查找函数
+void del_friend();                      //删除好友
 void before_login_quit();               //登陆之后的退出函数
 void add_friend();                      //添加好友函数
 void show_all_friend();                 //查看所有好友函数
@@ -191,7 +191,7 @@ void sign_pthread()
                 }
                 break;
             case 'l':
-                printf("%s\n", chat.news);
+                printf("\n所有好友：%s\n", chat.news);
                 break;
             
         }
@@ -397,6 +397,7 @@ void print_login_menu()
 
 void friend_management()
 {
+    char s[10];
     char            select;
     while(1)
     {
@@ -405,11 +406,21 @@ void friend_management()
         printf("         1.添加好友\n");
         printf("         2.查看所有好友\n");
         printf("         3.查看在线好友\n");
-        printf("         4.查找好友\n");
+        printf("         4.删除好友\n");
         printf("         0.返回上级菜单\n");
         printf("---------------------------------\n");
         printf("         请选择：");
         setbuf(stdin, NULL);
+        /*while(1)
+        {
+            scanf("%s", s);
+            if((strcmp(s, "1") != 0) && (strcmp(s, "2") != 0) &&(strcmp(s, "3") != 0) &&(strcmp(s, "4") != 0) &&(strcmp(s, "5") != 0) &&(strcmp(s, "0") != 0))
+            {
+                continue;
+            }
+            else
+            select = atoi(s);
+        }*/
         scanf("%c", &select);
         switch(select)
         {
@@ -424,7 +435,7 @@ void friend_management()
             case '3':
                 show_online_friend();
             case '4':
-                find_friend();
+                del_friend();
             default :
                 break;
         }
@@ -442,6 +453,7 @@ void add_friend()
     strcpy(chat.from, user.username);
     printf("请输入要添加的好友名：");
     setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
     scanf("%s", chat.news);
     memcpy(add_buf, &chat, sizeof(struct chat));
     ret = send(conn_fd, add_buf, 1024, 0);
@@ -493,7 +505,7 @@ void show_all_friend()
     struct chat     chat;
     memset(&chat, 0, sizeof(struct chat));
     chat.flag = 'l';
-    strcmp(chat.from, user.username);
+    strcpy(chat.from, user.username);
     memcpy(buf, &chat, sizeof(struct chat));
     send(conn_fd, buf, 1024, 0);
 }
@@ -503,7 +515,7 @@ void show_online_friend()
 
 }
 
-void find_friend() 
+void del_friend() 
 {
 
 }

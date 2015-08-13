@@ -236,6 +236,7 @@ void * client (void * arg)
                     if(strcmp(chat.from, p->user.username) == 0)
                     {
                         strcpy((p->friend[p->friends_num]).username, chat.news);
+                        p->friends_num++;
                         break;
                     }
                 }
@@ -247,6 +248,7 @@ void * client (void * arg)
                 send(conn[i].fd, recv_buf, 1024, 0);
                 pthread_mutex_lock(&mutex);
                 save();
+                head = readuser();
                 pthread_mutex_unlock(&mutex);
                 break;
             case 'q':
@@ -259,24 +261,25 @@ void * client (void * arg)
                 pthread_exit(0);
                 break;
             case 'l':
+                pthread_mutex_lock(&mutex);
                 head = readuser();
+                pthread_mutex_unlock(&mutex);
                 p = head->next;
-                memset(&chat, 0, sizeof(struct chat));
                 memset(recv_buf, 0, 1024);
                 for(p; p != NULL; p = p->next)
                 {
-                    if(strcmp(chat.from, (p->user).username) == 0);
+                    if(strcmp(chat.from, (p->user).username) == 0)
                     {
                         int i;
                         for(i = 0; i < p->friends_num; i++)
                         {
-                            printf("%s\n", (p->friend[i]).username);
-                            strcat(chat.news, ",");
                             strcat(chat.news, (p->friend[i].username));
+                            strcat(chat.news, ",");
                         }
                         break;
                     }
                 }
+                printf("%s\n", chat.news);
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 break;
