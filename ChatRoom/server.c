@@ -344,6 +344,39 @@ void * client (void * arg)
                     }
                 }
                 break;
+            case 's':
+                pthread_mutex_lock(&mutex);
+                head = readuser();
+                pthread_mutex_unlock(&mutex);
+                p = head->next;             
+                int j;
+                for(j = 0; j < LISTENQ; j++)
+                {
+                    if(strcmp(conn[j].name, chat.to) == 0)
+                    {
+                        memset(flag, 0, 1024);
+                        memcpy(flag, &chat, sizeof(struct chat));
+                        send(conn[j].fd, flag, 1024, 0);
+                        break;
+                    }
+                }
+                break;
+            case 'p':
+                pthread_mutex_lock(&mutex);
+                head = readuser();
+                pthread_mutex_unlock(&mutex);
+                p = head->next;
+                int k;
+                for(k = 0; k < LISTENQ; k++)
+                {
+                    if(conn[k].fd != -1)
+                    {
+                        memset(flag, 0, 1024);
+                        memcpy(flag, &chat, sizeof(struct chat));
+                        send(conn[k].fd, flag, 1024, 0);
+                    }
+                }
+                break;
         }
     }
 }

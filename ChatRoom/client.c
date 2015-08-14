@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "inputkey_getch.h"
+#include <time.h>
 
 #define BUFSIZE 1024 
 
@@ -201,6 +202,12 @@ void sign_pthread()
 	            break;
             case 'd':
                 printf("\n\n\t删除成功\n");
+                break;
+            case 's':
+                printf("\n好友%s   %s:\n%s\n", chat.from, chat.time, chat.news);
+                break;
+            case 'p':
+                printf("\n群聊  好友:%s  %s\n%s\n", chat.from, chat.time, chat.news);
                 break;
         }
         
@@ -536,7 +543,7 @@ void private_chat()
     struct chat chat;
     char        buf[1024];
     char        name[10];
-
+    time_t      t;
     printf("-------------------------\n");
     printf("请输入接收方用户名：");
     scanf("%s", name);
@@ -544,14 +551,45 @@ void private_chat()
     while(1)
     {
         memset(&chat, 0, sizeof(struct chat));
+        chat.flag = 's';
         strcpy(chat.from, user.username);
         strcpy(chat.to, name);
         printf("请输入消息：");
+        setbuf(stdin, NULL);
         scanf("%s", chat.news);
+        time(&t);
+        strcpy(chat.time, ctime(&t));
+        if(strcmp(chat.news, "exit") == 0){
+            return ;
+        }
+        memcpy(buf, &chat, sizeof(struct chat));
+        send(conn_fd, buf, 1024, 0);
     }
 }
 
 void public_chat()
 {
-    
+    struct chat chat;
+    char        buf[1024];
+    char        name[10];
+    time_t      t;
+    printf("-------------------------\n");
+    printf("-----输入exit取消发送----\n");
+    while(1)
+    {
+        memset(&chat, 0, sizeof(struct chat));
+        chat.flag = 'p';
+        strcpy(chat.from, user.username);
+        strcpy(chat.to, name);
+        printf("请输入消息：");
+        setbuf(stdin, NULL);
+        scanf("%s", chat.news);
+        time(&t);
+        strcpy(chat.time, ctime(&t));
+        if(strcmp(chat.news, "exit") == 0){
+            return ;
+        }
+        memcpy(buf, &chat, sizeof(struct chat));
+        send(conn_fd, buf, 1024, 0);
+    }
 }
