@@ -283,6 +283,67 @@ void * client (void * arg)
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 break;
+	    case 'o':
+                pthread_mutex_lock(&mutex);
+                head = readuser();
+                pthread_mutex_unlock(&mutex);
+                p = head->next;
+                memset(recv_buf, 0, 1024);
+                for(p; p != NULL; p = p->next)
+                {
+                    if(strcmp(chat.from, (p->user).username) == 0)
+                    {
+                        int i, j;
+                        for(i = 0; i < p->friends_num; i++)
+                        {
+                            for(j = 0; j < 20; j++)
+                            {
+                                if(strcmp(p->friend[i].username, conn[i].name) == 0)
+                                {
+                                    strcat(chat.news, (p->friend[i].username));
+                                    strcat(chat.news, ",");
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                printf("%s\n", chat.news);
+                memcpy(recv_buf, &chat, sizeof(struct chat));
+                send(conn[i].fd, recv_buf, 1024, 0);
+                break;
+            case 'd':
+                pthread_mutex_lock(&mutex);
+                head = readuser();
+                pthread_mutex_unlock(&mutex);
+                p = head->next;
+                for(p; p != NULL; p = p->next)
+                {
+                    if(strcmp(p->user.username, chat.from) == 0)
+                    {
+                        int i, j;
+                        for(i = 0; i < p->friends_num; i++)
+                        {
+                            if(strcmp(p->friend[i].username, chat.from))
+                            {
+                                for(j = i; j < p->friends_num - 1; j++)
+                                {
+                                    strcpy(p->friend[j].username, p->friend[j+1].username);
+                                }
+                                strcpy(p->friend[j].username, "");
+                                p->friends_num--;
+                                pthread_mutex_lock(&mutex);
+                                save();
+                                head = readuser();
+                                pthread_mutex_unlock(&mutex);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
         }
     }
 }

@@ -33,6 +33,9 @@ void add_friend();                      //添加好友函数
 void show_all_friend();                 //查看所有好友函数
 void show_online_friend();              //查看在线好友
 void sign_pthread();                    //处理消息线程函数
+void private_chat();                    //私聊函数
+void public_chat();                     //群聊函数
+
 
 struct info                             //个人信息
 {
@@ -92,7 +95,7 @@ void cls()
 {
     char c;
     do{
-        c = fgetc(stdin);
+        c = getch1();
     }while(c != 10 && c != EOF);
 }
 
@@ -191,9 +194,14 @@ void sign_pthread()
                 }
                 break;
             case 'l':
-                printf("\n所有好友：%s\n", chat.news);
+                printf("\n\n\t所有好友：%s\n", chat.news);
                 break;
-            
+            case 'o':
+                printf("\n\n\t在线好友：%s\n", chat.news);
+	            break;
+            case 'd':
+                printf("\n\n\t删除成功\n");
+                break;
         }
         
     }
@@ -397,7 +405,6 @@ void print_login_menu()
 
 void friend_management()
 {
-    char s[10];
     char            select;
     while(1)
     {
@@ -411,16 +418,6 @@ void friend_management()
         printf("---------------------------------\n");
         printf("         请选择：");
         setbuf(stdin, NULL);
-        /*while(1)
-        {
-            scanf("%s", s);
-            if((strcmp(s, "1") != 0) && (strcmp(s, "2") != 0) &&(strcmp(s, "3") != 0) &&(strcmp(s, "4") != 0) &&(strcmp(s, "5") != 0) &&(strcmp(s, "0") != 0))
-            {
-                continue;
-            }
-            else
-            select = atoi(s);
-        }*/
         scanf("%c", &select);
         switch(select)
         {
@@ -467,36 +464,35 @@ void add_friend()
 
 void message_management()
 {
-    
+    while(1)
+    {
+        char c;
+        printf("-------------user:%s----------\n", user.username);
+        printf("        1.发送私聊消息\n");
+        printf("        2.发送群聊消息\n");
+        printf("        3.查看聊天记录\n");
+        printf("        0.返回上级菜单\n");
+        printf("------------------------------\n");
+        printf("        请选择：");
+        setbuf(stdin, NULL);
+        scanf("%c", &c);
+        switch(c)
+        {
+            case '1':
+                private_chat();
+                break;
+            case '2':
+                public_chat();
+                break;
+            case '3':
+                break;
+            case '0':
+                return ;
+            default :
+                break;
+        }
+    }
 }
-
-/*void before_login_quit()
-{
-    struct chat chat;
-    char        quit_buf[1024];
-    int         ret;
-
-    memset(quit_buf, 0, sizeof(quit_buf));
-    memset(&chat, 0, sizeof(struct chat));
-    chat.flag = 'q';
-    memcpy(quit_buf, &chat, sizeof(struct chat));
-    ret = send(conn_fd, quit_buf, 1024, 0);
-    if(ret != 1024)
-    {
-        printf("send error!\n");
-        exit(1);
-    }
-    ret = recv(conn_fd, quit_buf, 1024, 0);
-    if(ret != 1024)
-    {
-        perror("recv error");
-        exit(1);
-    }
-    if(strcmp(quit_buf, "y") == 0)
-    {
-        exit(0);
-    }
-}*/
 
 
 void show_all_friend()
@@ -512,10 +508,50 @@ void show_all_friend()
 
 void show_online_friend()
 {
-
+    char            buf[1024];
+    struct chat     chat;
+    memset(&chat, 0, sizeof(struct chat));
+    chat.flag = 'o';
+    strcpy(chat.from, user.username);
+    memcpy(buf, &chat, sizeof(struct chat));
+    send(conn_fd, buf, 1024, 0);
 }
 
 void del_friend() 
 {
+    char buf[1024];
+    struct chat chat;
+    memset(&chat, 0, sizeof(struct chat));
+    memset(buf, 0, 1024);
+    chat.flag = 'd';
+    strcpy(chat.from, user.username);
+    printf("请输入要删除的好友：");
+    scanf("%s", chat.news);
+    memcpy(buf, &chat, sizeof(struct chat));
+    send(conn_fd, buf, 1024, 0);
+}
 
+void private_chat()
+{
+    struct chat chat;
+    char        buf[1024];
+    char        name[10];
+
+    printf("-------------------------\n");
+    printf("请输入接收方用户名：");
+    scanf("%s", name);
+    printf("\n\n----------输入exit退出---------\n");
+    while(1)
+    {
+        memset(&chat, 0, sizeof(struct chat));
+        strcpy(chat.from, user.username);
+        strcpy(chat.to, name);
+        printf("请输入消息：");
+        scanf("%s", chat.news);
+    }
+}
+
+void public_chat()
+{
+    
 }
