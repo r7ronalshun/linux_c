@@ -134,7 +134,8 @@ int main(void)
         }
         
         conn[i].fd = conn_fd;                                   //若该连接套接字可用，将其使用赋值给连接套接字队列中未被使用的一个
-        printf("accrpt a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));      //新客户端连接，服务器显示客户端连接ip
+        printf("conn[i].fd: i %d, %d\n", i, conn[i].fd);
+        printf("accept a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));      //新客户端连接，服务器显示客户端连接ip
         int g = i;
         pthread_create(&thid, NULL, client, (void *)&g);                     //创建一个新的线程处理客户端请求
     }
@@ -293,13 +294,16 @@ void * client (void * arg)
                 {
                     if(strcmp(chat.from, (p->user).username) == 0)
                     {
+                        printf("chat.from:%s\n", chat.from);
                         int i, j;
+                        printf("friend_num:%d\n", p->friends_num);
                         for(i = 0; i < p->friends_num; i++)
                         {
                             for(j = 0; j < 20; j++)
                             {
                                 if(strcmp(p->friend[i].username, conn[i].name) == 0)
                                 {
+                                    printf("conn[i].fd%s\n", conn[i].name);
                                     strcat(chat.news, (p->friend[i].username));
                                     strcat(chat.news, ",");
                                     break;
@@ -325,15 +329,15 @@ void * client (void * arg)
                         int i, j;
                         for(i = 0; i < p->friends_num; i++)
                         {
-                            if(strcmp(p->friend[i].username, chat.from))
+                            if(strcmp(p->friend[i].username, chat.news) == 0)
                             {
                                 for(j = i; j < p->friends_num - 1; j++)
                                 {
                                     strcpy(p->friend[j].username, p->friend[j+1].username);
                                 }
                                 strcpy(p->friend[j].username, "");
-                                p->friends_num--;
                                 pthread_mutex_lock(&mutex);
+                                p->friends_num--;
                                 save();
                                 head = readuser();
                                 pthread_mutex_unlock(&mutex);
@@ -383,6 +387,8 @@ void * client (void * arg)
 
 void quit(void *arg)                        //服务器退出函数
 {
+    struct chat     chat;
+    char buf[1024];
     char shutdown[10];                          //接受服务器退出时输入
     int  i;                                 //关闭所有的连接套接字
     while(1)
@@ -391,10 +397,14 @@ void quit(void *arg)                        //服务器退出函数
         scanf("%s", shutdown);
         if(strcmp(shutdown, "exit") == 0)
         {
+            memset(&chat, 0, sizeof(struct chat));
+            chat.flag = 'e';
+            memcpy(buf, &chat, sizeof(struct chat));
             for(i = 0; i < LISTENQ; i++)
             {
                 if(conn[i].fd != -1) 
                 {
+                    send(conn[i].fd, buf, 1024, 0);
                     close(conn[i].fd);
                     conn[i].fd = -1;
                     strcpy(conn[i].name, " ");

@@ -68,9 +68,7 @@ int                 friend_num;
 char                password[10];
 struct info         user;
 struct info         friend[10];
-struct info         member[10];
-struct info         group[3];
-
+pthread_mutex_t     mutex;
 
 struct chat                             //聊天消息结构体
 {
@@ -170,6 +168,7 @@ void sign_pthread()
     char        sign_buf[1024];
     struct chat chat;
     int         ret;
+    FILE        *fp;
 
     while(1)
     {
@@ -205,10 +204,33 @@ void sign_pthread()
                 break;
             case 's':
                 printf("\n好友%s   %s:\n%s\n", chat.from, chat.time, chat.news);
+                pthread_mutex_lock(&mutex);
+                fp = fopen(user.username, "at+");
+                if(fp == NULL)
+                {
+                    printf("cann't open file");
+                    exit(1);
+                }
+                fwrite(&chat, sizeof(struct chat), 1, fp);
+                fclose(fp);
+                pthread_mutex_unlock(&mutex);
                 break;
             case 'p':
                 printf("\n群聊  好友:%s  %s\n%s\n", chat.from, chat.time, chat.news);
+                pthread_mutex_lock(&mutex);
+                fp = fopen(user.username, "at+");
+                if(fp == NULL)
+                {
+                    printf("cann't open file");
+                    exit(1);
+                }
+                fwrite(&chat, sizeof(struct chat), 1, fp);
+                fclose(fp);
+                pthread_mutex_unlock(&mutex);
                 break;
+            case 'e':
+                printf("\n\n--------服务器已退出-------\n\n\n");
+                exit(0);
         }
         
     }
@@ -413,12 +435,13 @@ void print_login_menu()
 void friend_management()
 {
     char            select;
+    char            c;
     while(1)
     {
         //system("clear");
         printf("----------user: %s-----------------\n", user.username);
         printf("         1.添加好友\n");
-        printf("         2.查看所有好友\n");
+        printf("         2.查看我的好友\n");
         printf("         3.查看在线好友\n");
         printf("         4.删除好友\n");
         printf("         0.返回上级菜单\n");
@@ -438,8 +461,10 @@ void friend_management()
                 break;
             case '3':
                 show_online_friend();
+                break;
             case '4':
                 del_friend();
+                break;
             default :
                 break;
         }
@@ -471,6 +496,9 @@ void add_friend()
 
 void message_management()
 {
+    FILE    *fp;
+    struct chat     chat;
+
     while(1)
     {
         char c;
@@ -481,7 +509,6 @@ void message_management()
         printf("        0.返回上级菜单\n");
         printf("------------------------------\n");
         printf("        请选择：");
-        setbuf(stdin, NULL);
         scanf("%c", &c);
         switch(c)
         {
@@ -492,6 +519,24 @@ void message_management()
                 public_chat();
                 break;
             case '3':
+                pthread_mutex_lock(&mutex);
+                fp = fopen(user.username, "rt");
+                if(fp == NULL)
+                {
+                    printf("无消息记录\n");
+                    break;
+                }
+                printf("\n消息记录：\n");
+                if(fgetc(fp) != EOF)
+                {
+                    fseek(fp, -1L, SEEK_CUR);
+                }
+                while(((fread(&chat, sizeof(struct chat), 1 ,fp))!= -1) && !feof(fp))
+                {
+                    printf("\nfrom:%s  time:%s  news:%s\n", chat.from, chat.time, chat.news);
+                    memset(&chat, 0, sizeof(struct chat));
+                }
+                pthread_mutex_unlock(&mutex);
                 break;
             case '0':
                 return ;
