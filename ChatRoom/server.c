@@ -67,8 +67,10 @@ struct users * login(struct log, int);              //用户登陆
 
 
 pthread_mutex_t         mutex;                      //锁
-struct users * head = NULL;                         //用户数据链表的头指针
-struct users * current_user;                        //指向当前用户的指针
+struct users *          head = NULL;                //用户数据链表的头指针
+struct users *          current_user;               //指向当前用户的指针
+FILE                    *fp1;
+pthread_mutex_t         mutex_fp;
 
 int main(void)
 {
@@ -115,7 +117,7 @@ int main(void)
         conn[i].fd = -1;                            //将所有的客户端的套接字初始化为-1,表示未连接
         strcpy(conn[i].name, " ");
     }
-    
+
     pthread_create(&quit_thid, NULL, (void *)quit, NULL);       //创建一个线程，用来服务器退出
     cli_len = sizeof(struct sockaddr_in);                       //客户端套接字长度
     while(1)
@@ -134,8 +136,12 @@ int main(void)
         }
         
         conn[i].fd = conn_fd;                                   //若该连接套接字可用，将其使用赋值给连接套接字队列中未被使用的一个
-        printf("conn[i].fd: i %d, %d\n", i, conn[i].fd);
         printf("accept a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));      //新客户端连接，服务器显示客户端连接ip
+        pthread_mutex_lock(&mutex_fp);
+        fp1 = fopen("system_log", "at");////////////////////////////
+        fprintf(fp, "accept a new client, IP : %s\n", inet_ntoa(cli_addr.sin_addr));
+        fclose(fp1);
+        pthread_mutex_unlock(&mutex_fp);
         int g = i;
         pthread_create(&thid, NULL, client, (void *)&g);                     //创建一个新的线程处理客户端请求
     }
