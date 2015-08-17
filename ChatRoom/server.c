@@ -187,6 +187,11 @@ void * client (void * arg)
             pthread_mutex_unlock(&mutex);
             if(p_user != NULL)
             {
+                int i;
+                for( i =0 ; i < LISTENQ;  i++ )
+                {
+                    printf("%d\n", conn[i].fd);
+                }
                 break;
             }
         }
@@ -307,7 +312,7 @@ void * client (void * arg)
                         {
                             for(j = 0; j < 20; j++)
                             {
-                                if(strcmp(p->friend[i].username, conn[i].name) == 0)
+                                if(strcmp(p->friend[i].username, conn[j].name) == 0)
                                 {
                                     printf("conn[i].fd%s\n", conn[i].name);
                                     strcat(chat.news, (p->friend[i].username));

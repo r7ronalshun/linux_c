@@ -197,6 +197,7 @@ void sign_pthread()
                 printf("\n\n\t所有好友：%s\n", chat.news);
                 break;
             case 'o':
+                usleep(1000000);
                 printf("\n\n\t在线好友：%s\n", chat.news);
 	            break;
             case 'd':
@@ -438,6 +439,8 @@ void friend_management()
     char            c;
     while(1)
     {
+        fflush(stdin);
+        select = '6';
         //system("clear");
         printf("----------user: %s-----------------\n", user.username);
         printf("         1.添加好友\n");
@@ -449,6 +452,7 @@ void friend_management()
         printf("         请选择：");
         setbuf(stdin, NULL);
         scanf("%c", &select);
+        getchar();
         switch(select)
         {
             case '0':
@@ -566,6 +570,7 @@ void show_online_friend()
     chat.flag = 'o';
     strcpy(chat.from, user.username);
     memcpy(buf, &chat, sizeof(struct chat));
+    printf("fgdefg%s\n", buf);
     send(conn_fd, buf, 1024, 0);
 }
 
