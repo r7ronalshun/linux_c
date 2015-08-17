@@ -197,7 +197,6 @@ void sign_pthread()
                 printf("\n\n\t所有好友：%s\n", chat.news);
                 break;
             case 'o':
-                usleep(1000000);
                 printf("\n\n\t在线好友：%s\n", chat.news);
 	            break;
             case 'd':
@@ -435,12 +434,10 @@ void print_login_menu()
 
 void friend_management()
 {
-    char            select;
-    char            c;
+    int             select;
+    char            c[10];
     while(1)
     {
-        fflush(stdin);
-        select = '6';
         //system("clear");
         printf("----------user: %s-----------------\n", user.username);
         printf("         1.添加好友\n");
@@ -451,22 +448,22 @@ void friend_management()
         printf("---------------------------------\n");
         printf("         请选择：");
         setbuf(stdin, NULL);
-        scanf("%c", &select);
-        getchar();
+        scanf("%s", c);
+        select = atoi(c);
         switch(select)
         {
-            case '0':
+            case 0:
                 return ;
-            case '1':
+            case 1:
                 add_friend();
                 break;
-            case '2':
+            case 2:
                 show_all_friend();
                 break;
-            case '3':
+            case 3:
                 show_online_friend();
                 break;
-            case '4':
+            case 4:
                 del_friend();
                 break;
             default :
@@ -502,10 +499,11 @@ void message_management()
 {
     FILE    *fp;
     struct chat     chat;
+    char            c[10];
+    int             select;
 
     while(1)
     {
-        char c;
         printf("-------------user:%s----------\n", user.username);
         printf("        1.发送私聊消息\n");
         printf("        2.发送群聊消息\n");
@@ -513,16 +511,17 @@ void message_management()
         printf("        0.返回上级菜单\n");
         printf("------------------------------\n");
         printf("        请选择：");
-        scanf("%c", &c);
-        switch(c)
+        scanf("%s", c);
+        select = atoi(c);
+        switch(select)
         {
-            case '1':
+            case 1:
                 private_chat();
                 break;
-            case '2':
+            case 2:
                 public_chat();
                 break;
-            case '3':
+            case 3:
                 pthread_mutex_lock(&mutex);
                 fp = fopen(user.username, "rt");
                 if(fp == NULL)
@@ -531,10 +530,6 @@ void message_management()
                     break;
                 }
                 printf("\n消息记录：\n");
-                if(fgetc(fp) != EOF)
-                {
-                    fseek(fp, -1L, SEEK_CUR);
-                }
                 while(((fread(&chat, sizeof(struct chat), 1 ,fp))!= -1) && !feof(fp))
                 {
                     printf("\nfrom:%s  time:%s  news:%s\n", chat.from, chat.time, chat.news);
@@ -542,7 +537,7 @@ void message_management()
                 }
                 pthread_mutex_unlock(&mutex);
                 break;
-            case '0':
+            case 0:
                 return ;
             default :
                 break;
@@ -570,7 +565,6 @@ void show_online_friend()
     chat.flag = 'o';
     strcpy(chat.from, user.username);
     memcpy(buf, &chat, sizeof(struct chat));
-    printf("fgdefg%s\n", buf);
     send(conn_fd, buf, 1024, 0);
 }
 

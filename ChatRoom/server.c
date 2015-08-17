@@ -187,11 +187,6 @@ void * client (void * arg)
             pthread_mutex_unlock(&mutex);
             if(p_user != NULL)
             {
-                int i;
-                for( i =0 ; i < LISTENQ;  i++ )
-                {
-                    printf("%d\n", conn[i].fd);
-                }
                 break;
             }
         }
@@ -305,9 +300,7 @@ void * client (void * arg)
                 {
                     if(strcmp(chat.from, (p->user).username) == 0)
                     {
-                        printf("chat.from:%s\n", chat.from);
                         int i, j;
-                        printf("friend_num:%d\n", p->friends_num);
                         for(i = 0; i < p->friends_num; i++)
                         {
                             for(j = 0; j < 20; j++)
@@ -324,7 +317,6 @@ void * client (void * arg)
                         break;
                     }
                 }
-                printf("%s\n", chat.news);
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 break;
