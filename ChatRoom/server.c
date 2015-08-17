@@ -137,11 +137,6 @@ int main(void)
         
         conn[i].fd = conn_fd;                                   //若该连接套接字可用，将其使用赋值给连接套接字队列中未被使用的一个
         printf("accept a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));      //新客户端连接，服务器显示客户端连接ip
-        pthread_mutex_lock(&mutex_fp);
-        fp1 = fopen("system_log", "at");////////////////////////////
-        fprintf(fp, "accept a new client, IP : %s\n", inet_ntoa(cli_addr.sin_addr));
-        fclose(fp1);
-        pthread_mutex_unlock(&mutex_fp);
         int g = i;
         pthread_create(&thid, NULL, client, (void *)&g);                     //创建一个新的线程处理客户端请求
     }
