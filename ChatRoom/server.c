@@ -137,6 +137,9 @@ int main(void)
         
         conn[i].fd = conn_fd;                                   //若该连接套接字可用，将其使用赋值给连接套接字队列中未被使用的一个
         printf("accept a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));      //新客户端连接，服务器显示客户端连接ip
+        fp1 = fopen("sys_log", "at+");
+        fprintf(fp1, "accept a new client, IP :%s\n", inet_ntoa(cli_addr.sin_addr));
+        fclose(fp1);
         int g = i;
         pthread_create(&thid, NULL, client, (void *)&g);                     //创建一个新的线程处理客户端请求
     }
@@ -260,6 +263,9 @@ void * client (void * arg)
                 send(conn[i].fd, recv_buf, 1024, 0);
                 conn[i].fd = -1;
                 printf("用户%s退出成功\n", (p_user->user).username);
+                fp1 = fopen("sys_log", "at+");
+                fprintf(fp1, "用户%s退出成功\n", (p_user->user).username);
+                fclose(fp1);
                 pthread_exit(0);
                 break;
             case 'l':
@@ -281,7 +287,6 @@ void * client (void * arg)
                         break;
                     }
                 }
-                printf("%s\n", chat.news);
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 break;
@@ -424,6 +429,9 @@ void save()                                             //用户数据保存
     if((fp = fopen("usersdata.db", "wb")) == NULL)
     {
         printf("Cann't open usersdata.db\n");
+        fp1 = fopen("err_log", "at+");
+        fprintf(fp1, "cann't open userdata.db\n");
+        fclose(fp1);
         exit(0);
     }
     while(p != NULL)
@@ -448,6 +456,9 @@ struct users * readuser()
     if((fp = fopen("usersdata.db", "rb")) == NULL)
     {
         printf("Cann't open usersdata.db\n");
+        fp1 = fopen("err_log", "at+");
+        fprintf(fp1, "conn't open userdata.db\n");
+        fclose(fp1);
         exit(0);
     }
     head = p1 = (struct users*)malloc(sizeof(struct users));
@@ -469,6 +480,9 @@ struct users * readuser()
 void my_err(const char * err_string, int line)      //自定义出错处理函数
 {
     fprintf(stderr, "line: %d", line);
+    fp1 = fopen("err_log", "at+");
+    fprintf(fp1, "%s:%s\n", err_string, strerror(errno));
+    fclose(fp1);
     perror(err_string);
 }
 
@@ -491,6 +505,9 @@ struct users * apply(struct log log, int i)
             if(ret != 1024)
             {
                 printf("send error\n");
+                fp1 = fopen("err_log", "at+");
+                fprintf(fp1, "send error\n");
+                fclose(fp1);
                 pthread_exit((void *)1);
                 
             }
@@ -515,6 +532,9 @@ struct users * apply(struct log log, int i)
         pthread_exit((void *)1);
     }
     printf("用户%s注册成功\n", (p1->user).username);
+    fp1 = fopen("sys_log", "at+");
+    fprintf(fp1, "用户%s注册成功\n", (p1->user).username);
+    fclose(fp1);
     return p1;
 }
 
@@ -535,6 +555,9 @@ struct users * login(struct log log, int i)
                 memcpy(login_buf, &user_temp.user, sizeof(user_temp.user));
                 ret = send(conn[i].fd, login_buf, 1024, 0);
                 printf("用户%s登陆成功！\n", log.name);
+                fp1 = fopen("sys_log", "at+");
+                fprintf(fp1, "用户%s登陆成功！\n", log.name);
+                fclose(fp1);
                 if(ret != 1024)
                 {
                     printf("发送失败！\n");
@@ -546,6 +569,9 @@ struct users * login(struct log log, int i)
         }
         p = p->next;
     }
+    fp1 = fopen("err_log", "at+");
+    fprintf(fp1, "用户%s登陆失败\n", log.name);
+    fclose(fp1);
     ret = send(conn[i].fd, "n", 1024, 0);
     if(ret != 1024)
     {
