@@ -183,14 +183,16 @@ void sign_pthread()
         memcpy(&chat, sign_buf, 1024);
         switch(chat.flag)
         {
+            case '0':
+                printf("消息已离线！\n");
+                break;
             case 'a':
-                printf("ok\n");
                 if(strcmp(chat.news, "n") == 0)
                 {
-                    printf("好友不存在！\n");
+                    printf("\n好友不存在！\n");
                 }
                 else{
-                    printf("好友添加成功\n");
+                    printf("\n好友添加成功\n");
                 }
                 break;
             case 'l':
@@ -245,7 +247,7 @@ void print_menu(void)
     char  c;                                    //接收选项
     while(1)
     {
-        //system("clear");
+        system("clear");
         printf("\n");
         printf("\n\n\n");
         printf("\t\t            1.注册\n\n");
@@ -302,6 +304,7 @@ int register_num()
     char        key[10], key1[10];
     struct log  apply;
 
+    system("clear");
     memset(&apply, 0, sizeof(apply));
     printf("\n\t请输入用户名：");
     scanf("%s", apply.name);
@@ -313,7 +316,7 @@ int register_num()
         inputkey(key1);
         if(strcmp(key, key1) != 0)
         {
-            printf("两次输入密码不相同，按任意键返回重新输入！\n");
+            printf("两次输入密码不相同，按ENTER键返回重新输入！\n");
             getchar();
         }
         else 
@@ -330,7 +333,6 @@ int register_num()
     memset(register_buf, 0, sizeof(register_buf));
     recv(conn_fd, register_buf, 1024, 0);
     memcpy(&apply, register_buf, 1024);
-    printf("flag%c\n", apply.flag);
     if(apply.flag == 'n')
     {
         printf("\n 用户名已被使用!\n");
@@ -354,7 +356,8 @@ int login()
 
     while(1)
     {
-        printf("请输入用户名：");
+        system("clear");
+        printf("\n\t请输入用户名：");
         scanf("%s", log.name);
         if(strcmp(log.name, "") != 0)
         {
@@ -363,7 +366,7 @@ int login()
     }
     while(1)
     {
-        printf("请输入密码：");
+        printf("\n\t请输入密码：");
         inputkey(log.pwd);
         if(strcmp(log.pwd, "") != 0)
         {
@@ -389,12 +392,12 @@ int login()
     if(strcmp(login_buf, log.name) == 0)
     {
         strcpy(user.username, log.name);
-        printf("\n登陆成功！\n");
+        printf("\n\t登陆成功！\n");
         return 1;
     }
     else
     {
-        printf("\n登陆失败！\n");
+        printf("\n\t登陆失败！\n");
         return 0;
     }
 
@@ -411,12 +414,12 @@ void print_login_menu()
         int             select;
         
         printf("\n");
-        printf("---------------------\n");
-        printf("       1.好友管理\n");
-        printf("       2.消息管理\n");
-        printf("       0.退出\n");
-        printf("---------------------\n");
-        printf("       请选择：");
+        printf("\t---------------------\n");
+        printf("\t       1.好友管理\n");
+        printf("\t       2.消息管理\n");
+        printf("\t       0.退出\n");
+        printf("\t---------------------\n");
+        printf("\t       请选择：");
         setbuf(stdin, NULL);
         scanf("%d", &select);
         switch (select)
@@ -444,14 +447,14 @@ void friend_management()
     while(1)
     {
         //system("clear");
-        printf("----------user: %s-----------------\n", user.username);
-        printf("         1.添加好友\n");
-        printf("         2.查看我的好友\n");
-        printf("         3.查看在线好友\n");
-        printf("         4.删除好友\n");
-        printf("         0.返回上级菜单\n");
-        printf("---------------------------------\n");
-        printf("         请选择：");
+        printf("\t----------user: %s-----------------\n", user.username);
+        printf("\t         1.添加好友\n");
+        printf("\t         2.查看我的好友\n");
+        printf("\t         3.查看在线好友\n");
+        printf("\t         4.删除好友\n");
+        printf("\t         0.返回上级菜单\n");
+        printf("\t---------------------------------\n");
+        printf("\t         请选择：");
         setbuf(stdin, NULL);
         scanf("%s", c);
         select = atoi(c);
@@ -486,7 +489,7 @@ void add_friend()
     memset(&chat, 0, sizeof(struct chat));
     chat.flag = 'a';
     strcpy(chat.from, user.username);
-    printf("请输入要添加的好友名：");
+    printf("\n\t请输入要添加的好友名：");
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     scanf("%s", chat.news);
@@ -509,13 +512,13 @@ void message_management()
 
     while(1)
     {
-        printf("-------------user:%s----------\n", user.username);
-        printf("        1.发送私聊消息\n");
-        printf("        2.发送群聊消息\n");
-        printf("        3.查看聊天记录\n");
-        printf("        0.返回上级菜单\n");
-        printf("------------------------------\n");
-        printf("        请选择：");
+        printf("\n\t-------------user:%s----------\n", user.username);
+        printf("\t        1.发送私聊消息\n");
+        printf("\t        2.发送群聊消息\n");
+        printf("\t        3.查看聊天记录\n");
+        printf("\t        0.返回上级菜单\n");
+        printf("\t------------------------------\n");
+        printf("\t        请选择：");
         scanf("%s", c);
         select = atoi(c);
         switch(select)
@@ -531,10 +534,10 @@ void message_management()
                 fp = fopen(user.username, "rt");
                 if(fp == NULL)
                 {
-                    printf("无消息记录\n");
+                    printf("\n\t无消息记录\n");
                     break;
                 }
-                printf("\n消息记录：\n");
+                printf("\n\t消息记录：\n");
                 while(((fread(&chat, sizeof(struct chat), 1 ,fp))!= -1) && !feof(fp))
                 {
                     printf("\nfrom:%s  time:%s  news:%s\n", chat.from, chat.time, chat.news);

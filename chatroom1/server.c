@@ -175,10 +175,10 @@ void * client (void * arg)
         if(log.flag == 'a')                 //注册请求
         {
             p_user = apply(log, i);
-            strcpy(conn[i].name, p_user->user.username);
             pthread_mutex_unlock(&mutex);   //解锁
             if(p_user != NULL)
             {
+                strcpy(conn[i].name, p_user->user.username);
                 break;
             }
         }
@@ -211,21 +211,12 @@ void * client (void * arg)
         }
     }
     struct chat chat;
-    printf("1\n");
     memset(filename, 0, 20);
-    printf("2\n");
-    printf("filename:%s\n", filename);
-    printf("p->user.username:%s\n", p_user->user.username);
     strcat(filename, p_user->user.username);
-    printf("3\n");
     strcat(filename, ".db");
-    printf("4\n");
     fp1 = fopen(filename, "rt");
-    printf("filename:%s\n", filename);
-    printf("5\n");
     if(fp1 != NULL)
     {
-        printf("fp1 ！= NULL\n");
         while(((fread(&chat, sizeof(struct chat), 1, fp1)) != -1) && !feof(fp1))
         {
             int i;
@@ -240,10 +231,6 @@ void * client (void * arg)
         }
         fclose(fp1);
         unlink(filename);
-    }
-    else 
-    {
-        printf("fp1 NULL\n");
     }
     while(1)
     {
@@ -267,7 +254,8 @@ void * client (void * arg)
                 {
                     memset(&chat, 0, sizeof(struct chat));
                     memset(recv_buf, 0, 1024);
-                    chat.flag = 'n';
+                    chat.flag = 'a';
+                    strcpy(chat.news, "n");
                     memcpy(recv_buf, &chat, sizeof(struct chat));
                     send(conn[i].fd, recv_buf, 1024, 0);
                     break;
@@ -413,6 +401,10 @@ void * client (void * arg)
                 fp1 = fopen(filename, "at+");
                 fwrite(&chat, sizeof(struct chat), 1, fp1);
                 fclose(fp1);
+                memset(&chat, 0, sizeof(struct chat));
+                chat.flag = '0';
+                memcpy(flag, &chat, sizeof(struct chat));
+                send(conn[i].fd, flag, 1024, 0);
                 break;
             case 'p':
                 pthread_mutex_lock(&mutex);
@@ -558,7 +550,7 @@ struct users * apply(struct log log, int i)
         }
         p = p->next;
     }
-
+    
     p1 = (struct users*)malloc(sizeof(struct user*));
     strcpy((p1->user).username, log1.name);
     strcpy(p1->password, log1.pwd);
