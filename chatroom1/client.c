@@ -83,14 +83,14 @@ int             message_num  = 0;               //消息数量
 struct chat     message[100];                   //消息队列
 
 
-void my_err(const char * err_string, int line)
+void my_err(const char * err_string, int line)                      //错误处理函数
 {
     fprintf(stderr, "line:%d,", line);
     perror(err_string);
     exit(1);
 }
 
-void cls()
+void cls()                                          //自定义清楚缓存函数
 {
     char c;
     do{
@@ -98,7 +98,7 @@ void cls()
     }while(c != 10 && c != EOF);
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char ** argv)                    //主函数
 {
     int                  i;
     int                  ret;
@@ -155,14 +155,19 @@ int main(int argc, char ** argv)
         my_err("connect", __LINE__);
     }
 
-    print_menu();                                                           //打印主菜单
-    pthread_create(&thid, NULL, (void *)sign_pthread, NULL);              //创建线程用来接受并解析所有消息
-    print_login_menu();
+    print_menu();                                                       //打印主菜单
+    pthread_create(&thid, NULL, (void *)sign_pthread, NULL);            //创建线程用来接受并解析所有消息
+    print_login_menu();                                                 //显示登陆之后的菜单    
     printf("任意键退出！\n");
     getchar();
 
 }
 
+
+/*
+ *该线程负责在登陆成功之后接收所有来自
+ *服务器的消息，所有消息都为chat结构体
+ */
 void sign_pthread()
 {
     char        sign_buf[1024];
@@ -173,20 +178,20 @@ void sign_pthread()
     while(1)
     {
         memset(sign_buf, 0, 1024);
-        memset(&chat, 0, sizeof(struct chat));
+        memset(&chat, 0, sizeof(struct chat)); 
         ret = recv(conn_fd, sign_buf, 1024, 0);
         if(ret != 1024)
         {
             perror("recv error");
             exit(1);
         }
-        memcpy(&chat, sign_buf, 1024);
+        memcpy(&chat, sign_buf, 1024);                                  //将接收到的消息转换到chat消息结构体当中
         switch(chat.flag)
         {
             //case '0':
                 //printf("消息已离线！\n");
                 //break;
-            case 'a':
+            case 'a':                                                   //添加好友请求的返回消息
                 if(strcmp(chat.news, "n") == 0)
                 {
                     printf("\n添加失败\n");
@@ -195,16 +200,16 @@ void sign_pthread()
                     printf("\n好友添加成功\n");
                 }
                 break;
-            case 'l':
+            case 'l':                                                   //请求查看所有好友的返回消息
                 printf("\n\n\t所有好友：%s\n", chat.news);
                 break;
-            case 'o':
+            case 'o':                                                   //请求查看在线好友的返回消息
                 printf("\n\n\t在线好友：%s\n", chat.news);
 	            break;
-            case 'd':
+            case 'd':                                                   //请求删除好友的返回消息
                 printf("\n\n\t删除成功\n");
                 break;
-            case 's':
+            case 's':                                                   //接收到私聊消息
                 printf("\n好友%s   %s:\n%s\n", chat.from, chat.time, chat.news);
                 pthread_mutex_lock(&mutex);
                 fp = fopen(user.username, "at+");
@@ -217,7 +222,7 @@ void sign_pthread()
                 fclose(fp);
                 pthread_mutex_unlock(&mutex);
                 break;
-            case 'p':
+            case 'p':                                                   //接收到群聊消息
                 printf("\n群聊  好友:%s  %s\n%s\n", chat.from, chat.time, chat.news);
                 pthread_mutex_lock(&mutex);
                 fp = fopen(user.username, "at+");
@@ -230,10 +235,10 @@ void sign_pthread()
                 fclose(fp);
                 pthread_mutex_unlock(&mutex);
                 break;
-            case 'x':
+            case 'x':                                                   //接受到离线消息
                 printf("\n离线  好友：%s  %s\n%s\n", chat.from, chat.time, chat.news);
                 break;
-            case 'e':
+            case 'e':                                                   //接受到服务器退出的消息
                 printf("\n\n--------服务器已退出-------\n\n\n");
                 exit(0);
         }
@@ -241,11 +246,11 @@ void sign_pthread()
     }
 }
 
-void print_menu(void)
+void print_menu(void)                                       //打印注册登陆菜单      
 {
     int num;
     int   ret;
-    char  c[10];                                    //接收选项
+    char  c[10];                                            //接收选项
     while(1)
     {
         system("clear");
@@ -264,14 +269,14 @@ void print_menu(void)
         num = atoi(c);
         if(num == 1)
         {
-            if(register_num())                  //注册返回值1,注册成功
+            if(register_num())                              //注册返回值1,注册成功
             {
                 break;
             }
         }
         else if(num == 2)
         {
-            ret = login();//登陆函数
+            ret = login();                                  //登陆函数
             if(ret == 1)
             {
                 break;  
@@ -288,11 +293,11 @@ void print_menu(void)
 }
 
 
-void quit()
+void quit()                                                 //客户端退出
 {
     struct log log;
     int ret;
-    char quitbuf[1024];                         //接受退出时服务器的返回结果
+    char quitbuf[1024];                                     //接受退出时服务器的返回结果
     memset(&log, 0, sizeof(struct log));
     log.flag = 'q';
     memcpy(quitbuf, &log, sizeof(struct log));
@@ -300,11 +305,11 @@ void quit()
     exit(0);
 }
 
-int register_num()
+int register_num()                                          //用户注册函数
 {
     int         i;
     char        register_buf[1024] = "0";
-    struct info user_temp;                      //暂存当前申请的用户信息
+    struct info user_temp;                                  //暂存当前申请的用户信息
     char        key[10], key1[10];
     struct log  apply;
 
@@ -315,10 +320,10 @@ int register_num()
     while(1)
     {
         printf("\n\t请输入密码：");
-        inputkey(key);
+        inputkey(key);                                      //调用密文密码输入函数
         printf("\n\t请再次输入密码：");
         inputkey(key1);
-        if(strcmp(key, key1) != 0)
+        if(strcmp(key, key1) != 0)                          //对两次输入的密码进行比较
         {
             printf("两次输入密码不相同，按ENTER键返回重新输入！\n");
             getchar();
@@ -350,7 +355,7 @@ int register_num()
     return 1;
 }
 
-int login()
+int login()                                                 //登陆函数                           
 {
     struct log log;
     char       login_buf[1024];
@@ -358,7 +363,7 @@ int login()
 
     memset(&log, 0, sizeof(struct log));
 
-    while(1)
+    while(1)                                                //while循环确保输入的用户名不为空
     {
         system("clear");
         printf("\n\t请输入用户名：");
@@ -407,7 +412,7 @@ int login()
 
 }
 
-void print_login_menu()
+void print_login_menu()                                     //打印登陆成功之后的菜单                                     
 {
     struct chat chat;
     while(1)
@@ -434,10 +439,10 @@ void print_login_menu()
         switch (select)
         {
             case 1:
-                friend_management();
+                friend_management();                    //跳转到好友管理菜单                 
                 break;
             case 2:
-                message_management();
+                message_management();                   //跳转到消息管理菜单
                 break;
             case 0:
                 memset(&chat, 0, sizeof(struct chat));
@@ -449,7 +454,7 @@ void print_login_menu()
     }
 }
 
-void friend_management()
+void friend_management()                                //好友管理菜单
 {
     int             select;
     char            c[10];
@@ -489,7 +494,7 @@ void friend_management()
     }
 }
 
-void add_friend()
+void add_friend()                                       //添加好友函数
 {
     struct chat chat;
     char        add_buf[1024];
@@ -512,7 +517,7 @@ void add_friend()
     return ;
 }
 
-void message_management()
+void message_management()                                       //消息管理菜单
 {
     FILE    *fp;
     struct chat     chat;
@@ -563,7 +568,7 @@ void message_management()
 }
 
 
-void show_all_friend()
+void show_all_friend()                              //发送请求查看所有的好友
 {
     char            buf[1024];
     struct chat     chat;
@@ -574,7 +579,7 @@ void show_all_friend()
     send(conn_fd, buf, 1024, 0);
 }
 
-void show_online_friend()
+void show_online_friend()                           //发送查看在线好友的请求
 {
     char            buf[1024];
     struct chat     chat;
@@ -585,8 +590,8 @@ void show_online_friend()
     send(conn_fd, buf, 1024, 0);
 }
 
-void del_friend() 
-{
+void del_friend()                                   //删除好友
+{   
     char buf[1024];
     struct chat chat;
     memset(&chat, 0, sizeof(struct chat));
@@ -599,7 +604,7 @@ void del_friend()
     send(conn_fd, buf, 1024, 0);
 }
 
-void private_chat()
+void private_chat()                                 //发送私聊消息
 {
     struct chat chat;
     char        buf[1024];
@@ -628,7 +633,7 @@ void private_chat()
     }
 }
 
-void public_chat()
+void public_chat()                                          //发送群聊消息
 {
     struct chat chat;
     char        buf[1024];
