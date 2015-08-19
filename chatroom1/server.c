@@ -146,7 +146,7 @@ int main(void)
     return 0;
 }
 
-void * client (void * arg)
+void * client (void * arg)                                      //客户端的线程函数，处理客户端发送的所有请求
 {
     int             f = *(int *)arg;
     int             i = f;
@@ -168,14 +168,14 @@ void * client (void * arg)
             pthread_exit(0);
         }
         
-        pthread_mutex_lock(&mutex);         //加锁
+        pthread_mutex_lock(&mutex);                             //加锁
         memcpy(&log, flag, 1024);
         
         head = readuser();
-        if(log.flag == 'a')                 //注册请求
+        if(log.flag == 'a')                                     //注册请求
         {
             p_user = apply(log, i);
-            pthread_mutex_unlock(&mutex);   //解锁
+            pthread_mutex_unlock(&mutex);                       //解锁
             if(p_user != NULL)
             {
                 strcpy(conn[i].name, p_user->user.username);
@@ -183,7 +183,7 @@ void * client (void * arg)
             }
         }
 
-        if(log.flag == 'l')                 //登陆请求
+        if(log.flag == 'l')                                     //登陆请求
         {
             p_user = login(log, i);
             pthread_mutex_unlock(&mutex);
@@ -210,6 +210,11 @@ void * client (void * arg)
             pthread_exit(0);
         }
     }
+    /*
+     * 当登陆或者注册成功之后，先打开用户名.db的文件
+     * 若打开成功说明有离线消息存在，然后将消息读取后
+     * 发送，当文件读取并发送完毕关闭并删除该文件
+     */
     struct chat chat;
     memset(filename, 0, 20);
     strcat(filename, p_user->user.username);
@@ -232,7 +237,7 @@ void * client (void * arg)
         fclose(fp1);
         unlink(filename);
     }
-    while(1)
+    while(1)                                            //登陆或注册成功之后处理客户端的请求
     {
         int flag2 = 0;
         struct chat         chat;
@@ -242,7 +247,7 @@ void * client (void * arg)
         memcpy(&chat, recv_buf, sizeof(recv_buf));
         switch(chat.flag)
         {
-            case 'a':
+            case 'a':                                   //客户端请求添加好友
                 pthread_mutex_lock(&mutex);
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
@@ -263,7 +268,7 @@ void * client (void * arg)
                 }
                 for(p = head->next; p != NULL; p = p->next)
                 {
-                    if(strcmp(chat.from, p->user.username) == 0)
+                    if(strcmp(chat.from, p->user.username) == 0)                //找到该用户
                     {
                         int i;
                         for(i = 0; i < p->friends_num; i++)
@@ -297,7 +302,7 @@ void * client (void * arg)
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
                 break;
-            case 'q':
+            case 'q':                                                       //客户端退出请求
                 memset(&chat, 0, sizeof(struct chat));
                 chat.flag = 't';
                 memcpy(recv_buf, &chat, sizeof(struct chat));
@@ -310,7 +315,7 @@ void * client (void * arg)
                 fclose(fp1);
                 pthread_exit(0);
                 break;
-            case 'l':
+            case 'l':                                                       //客户端请求查看所有好友
                 pthread_mutex_lock(&mutex);
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
@@ -332,7 +337,7 @@ void * client (void * arg)
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 break;
-	    case 'o':
+	    case 'o':                                                           //客户端请求查看在线好友
                 pthread_mutex_lock(&mutex);
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
@@ -345,7 +350,7 @@ void * client (void * arg)
                         int i, j;
                         for(i = 0; i < p->friends_num; i++)
                         {
-                            for(j = 0; j < 20; j++)
+                            for(j = 0; j < 20; j++)                         //判断是否在线
                             {
                                 if(strcmp(p->friend[i].username, conn[j].name) == 0)
                                 {
@@ -362,7 +367,7 @@ void * client (void * arg)
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);
                 break;
-            case 'd':
+            case 'd':                                                       //删除好友请求
                 pthread_mutex_lock(&mutex);
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
@@ -393,7 +398,7 @@ void * client (void * arg)
                     }
                 }
                 break;
-            case 's':
+            case 's':                                                       //私聊消息                                     
                 pthread_mutex_lock(&mutex);
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
@@ -412,7 +417,7 @@ void * client (void * arg)
                 /*
                  * 先将离线消息保存到文件当中
                  */
-		        memset(filename, 0, 20);
+		        memset(filename, 0, 20);                                    //若发送失败，将消息保存至文件，等待该用户登陆之后发送
                 strcat(filename, chat.to);
                 strcat(filename, ".db");
                 fp1 = fopen(filename, "at+");
@@ -423,7 +428,7 @@ void * client (void * arg)
                 memcpy(flag, &chat, sizeof(struct chat));
                 send(conn[i].fd, flag, 1024, 0);
                 break;
-            case 'p':
+            case 'p':                                                       //群聊消息
                 pthread_mutex_lock(&mutex);
                 head = readuser();
                 pthread_mutex_unlock(&mutex);
@@ -495,8 +500,8 @@ void save()                                             //用户数据保存
     }
     fclose(fp);
 }
-
-struct users * readuser()
+ 
+struct users * readuser()                                   //用户数据读取函数
 {
     FILE *          fp;
     struct users    *p1, *p2;
@@ -540,7 +545,7 @@ void my_err(const char * err_string, int line)      //自定义出错处理函�
     perror(err_string);
 }
 
-struct users * apply(struct log log, int i)
+struct users * apply(struct log log, int i)         //注册函数                         
 {
     char            enroll_buf[1024];
     struct log      log1;
@@ -592,7 +597,7 @@ struct users * apply(struct log log, int i)
     return p1;
 }
 
-struct users * login(struct log log, int i)
+struct users * login(struct log log, int i)                 //登陆函数
 {
     char            login_buf[1024];
     struct users    *p = head->next;
