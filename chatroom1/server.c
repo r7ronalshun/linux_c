@@ -234,6 +234,7 @@ void * client (void * arg)
     }
     while(1)
     {
+        int flag2 = 0;
         struct chat         chat;
         memset(&chat, 0, sizeof(chat));
         memset(recv_buf, 0, sizeof(recv_buf));
@@ -264,6 +265,18 @@ void * client (void * arg)
                 {
                     if(strcmp(chat.from, p->user.username) == 0)
                     {
+                        int i;
+                        for(i = 0; i < p->friends_num; i++)
+                        {
+                            if(strcmp(p->friend[i].username, chat.news) == 0)
+                            {
+                                flag2 = 1;
+                                break;
+                            }   
+                        }
+                        if(flag2 == 1){
+                            break;
+                        }
                         strcpy((p->friend[p->friends_num]).username, chat.news);
                         p->friends_num++;
                         break;
@@ -271,7 +284,11 @@ void * client (void * arg)
                 }
                 memset(&chat, 0, 1024);
                 chat.flag = 'a';
-                strcpy(chat.news, "y");
+                if(flag2 == 1)
+                    strcpy(chat.news, "n");
+                else{
+                    strcpy(chat.news, "y");
+                }
                 memset(recv_buf, 0, 1024);
                 memcpy(recv_buf, &chat, sizeof(struct chat));
                 send(conn[i].fd, recv_buf, 1024, 0);

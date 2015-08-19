@@ -189,7 +189,7 @@ void sign_pthread()
             case 'a':
                 if(strcmp(chat.news, "n") == 0)
                 {
-                    printf("\n好友不存在！\n");
+                    printf("\n添加失败\n");
                 }
                 else{
                     printf("\n好友添加成功\n");
@@ -243,8 +243,9 @@ void sign_pthread()
 
 void print_menu(void)
 {
+    int num;
     int   ret;
-    char  c;                                    //接收选项
+    char  c[10];                                    //接收选项
     while(1)
     {
         system("clear");
@@ -256,16 +257,19 @@ void print_menu(void)
         printf("\t\t----------------------------\n\n");
         printf("\t\t         请选择<1 ~ 3>：");
         setbuf(stdin, NULL);
-        scanf("%c", &c);
-        
-        if(c == '1')
+        scanf("%s", c);
+        if((strcmp(c, "1") != 0)  &&(strcmp(c, "2") != 0) && (strcmp(c, "3") != 0)){
+            continue;
+        }
+        num = atoi(c);
+        if(num == 1)
         {
             if(register_num())                  //注册返回值1,注册成功
             {
                 break;
             }
         }
-        else if(c == '2')
+        else if(num == 2)
         {
             ret = login();//登陆函数
             if(ret == 1)
@@ -273,7 +277,7 @@ void print_menu(void)
                 break;  
             }
         }
-        else if(c == '3')
+        else if(num == 3)
         {
             quit();
         }
@@ -412,7 +416,8 @@ void print_login_menu()
         struct chat     login_user;
         char            login_user_buf[1024];
         int             select;
-        
+        char            c[10];
+
         printf("\n");
         printf("\t---------------------\n");
         printf("\t       1.好友管理\n");
@@ -421,7 +426,11 @@ void print_login_menu()
         printf("\t---------------------\n");
         printf("\t       请选择：");
         setbuf(stdin, NULL);
-        scanf("%d", &select);
+        scanf("%s", c);
+        if((strcmp(c, "1") != 0) &&  (strcmp(c, "2") != 0) && (strcmp(c, "0") != 0)){
+            continue;
+        }
+        select = atoi(c);
         switch (select)
         {
             case 1:
