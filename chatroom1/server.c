@@ -414,6 +414,8 @@ void * client (void * arg)
                 int k;
                 for(k = 0; k < LISTENQ; k++)
                 {
+                    if(k == i)
+                        continue;
                     if(conn[k].fd != -1)
                     {
                         memset(flag, 0, 1024);

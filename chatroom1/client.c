@@ -183,9 +183,9 @@ void sign_pthread()
         memcpy(&chat, sign_buf, 1024);
         switch(chat.flag)
         {
-            case '0':
-                printf("消息已离线！\n");
-                break;
+            //case '0':
+                //printf("消息已离线！\n");
+                //break;
             case 'a':
                 if(strcmp(chat.news, "n") == 0)
                 {
