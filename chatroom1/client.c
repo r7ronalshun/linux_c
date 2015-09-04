@@ -271,6 +271,7 @@ void print_menu(void)                                       //打印注册登陆
         {
             if(register_num())                              //注册返回值1,注册成功
             {
+                quit();
                 break;
             }
         }
