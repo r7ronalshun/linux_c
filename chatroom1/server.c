@@ -446,6 +446,15 @@ void * client (void * arg)                                      //客户端的�
                     }
                 }
                 break;
+            case '\0':
+                printf("用户%s强制退出\n", (p_user->user).username);
+                conn[i].fd = -1;
+                strcpy(conn[i].name, " ");
+                fp1 = fopen("sys_log", "at+");
+                fprintf(fp1, "用户%s强制退出\n", (p_user->user).username);
+                fclose(fp1);
+                pthread_exit(0);
+                break;
         }
     }
 }
