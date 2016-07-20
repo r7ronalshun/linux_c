@@ -65,8 +65,8 @@ int main()
     char write_buf[32] = "hello world!";
 
     //在当前目录下创建文件example_63.c
-    if((fd = creat("example_63.c", S_IRWXU)) == -1)             //未设置文件的读写状态
-    //if((fd = open("example_63.c", O_RDWR|O_CREAT|O_TRUNC, S_IRWXU)) == -1)
+    //if((fd = creat("example_63.c", S_IRWXU)) == -1)             //未设置文件的读写状态
+    if((fd = open("example_63.c", O_RDWR|O_CREAT|O_TRUNC, S_IRWXU)) == -1)
     {
         my_err("open",__LINE__);
     }
