@@ -80,6 +80,7 @@ int main()
     char                 recv_buf[128];
 
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);          //创建一个TCP套接字
+    printf("%d\n", sock_fd);
     if(sock_fd < 0)
     {
         my_err("socket", __LINE__);
@@ -110,6 +111,8 @@ int main()
     while(1)
     {
         conn_fd = accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len);
+        printf("sock_fd:%d\n", sock_fd);
+        printf("conn_fd:%d\n", conn_fd);
         if(conn_fd < 0)
         {
             my_err("accept", __LINE__);
