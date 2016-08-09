@@ -22,9 +22,13 @@ int main(void)
     pthread_t assistthid;
     int status;
 
+    printf("%d\n", status);
     pthread_create(&assistthid, NULL, (void *) assisthread, NULL);
-    pthread_join(assistthid, (void *)&status);
+//    pthread_join(assistthid, (void *)&status);
+    sleep(5);
+    printf("\n\n");
     printf("assistthid's exit is caused %d\n", status);
+    //sleep(5);
 
     return 0;
 }

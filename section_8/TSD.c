@@ -17,7 +17,7 @@ void * thread2(void *arg)
 {
     int tsd = 5;
     printf("thread2 %d is running\n", (int)pthread_self());
-    pthread_setspecific(key, (void *) &tsd);
+    pthread_setspecific(key, (void *)tsd);
     printf("thread %d return %d\n", (int)(pthread_self()), *(int *)pthread_getspecific(key));
 }
 
@@ -27,7 +27,7 @@ void *thread1(void *arg)
     pthread_t thid2;
 
     printf("thread %u is running\n", (unsigned)pthread_self());
-    pthread_setspecific(key, (void *)&tsd);
+    pthread_setspecific(key, (void *)tsd);
     pthread_create(&thid2, NULL, thread2, NULL);
     sleep(5);
     printf("thread %d returns %d\n", (int)pthread_self(), *(int *)pthread_getspecific(key));
@@ -39,8 +39,9 @@ int main(void)
     printf("main thread begins running\n");
     pthread_key_create(&key, NULL);
     pthread_create(&thid1, NULL, thread1, NULL);
-    //sleep(1);
+    //sleep(10);
     pthread_join(thid1, NULL);
     pthread_key_delete(key);
-    printf("main thread exit\n"); return 0;
+    printf("main thread exit\n"); 
+    return 0;
 }
