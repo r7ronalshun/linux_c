@@ -130,13 +130,18 @@ int main(int argc, char ** argv)
     }
 
     conn_fd = socket(AF_INET, SOCK_STREAM, 0);                              //创建一个tcp套接字
+    printf("client conn_fd:%d\n", conn_fd);
     if(conn_fd < 0){
         my_err("socket", __LINE__);
     }
 
-    if(connect(conn_fd, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr)) < 0){    //向服务器端发送连接请求
+
+    printf("client conn_fd:%d\n", conn_fd);
+    int ret1 = -1;
+    if((ret = connect(conn_fd, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr))) < 0){    //向服务器端发送连接请求
         my_err("connect", __LINE__);
     }
+    printf("ret:%d\n", ret1);
     
     input_userinfo(conn_fd, "username");                    //输入用户名和密码
     input_userinfo(conn_fd, "password");
@@ -150,6 +155,7 @@ int main(int argc, char ** argv)
     }
     printf("\n");
 
+    printf("client conn_fd:%d\n", conn_fd);
     close(conn_fd);
     return 0;
     
