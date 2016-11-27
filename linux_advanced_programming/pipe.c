@@ -28,17 +28,21 @@ int main(int argc, char * argv[]){
     //mkfifo("pipe", 0644);
     if((pid = fork()) > 0){
         int stat;
+        close(pfd[0]);
         //fd = open("pipe", O_WRONLY);
         dup2(pfd[1], 1);
         execlp("ls", "ls", "-l", NULL);
-        //close(fd);
-        wait(&stat);
+        close(pfd[1]);
+        wait(NULL);
     }else if(pid == 0){
+        sleep(1);
 //        fd = open("pipe", O_RDONLY);
+        close(pfd[1]);
         dup2(pfd[0], 0);
         printf("more:\n");
         execlp("more", "more", NULL);
 //        close(fd);
+        close(pfd[0]);
     }else{
         perror("FORK ERROR");
     }
